@@ -1,0 +1,84 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import LegalLayout from '@components/LegalLayout.astro';
+import Footer from '@components/Footer.astro';
+
+const locale = 'pt' as const;
+---
+<BaseLayout
+  locale={locale}
+  title="Política de Privacidade — Onswer"
+  description="Como a Onswer coleta, usa e protege seus dados."
+  canonicalPath="/pt/privacy"
+>
+  <LegalLayout locale={locale} title="Política de Privacidade" effectiveDate="13 de Maio de 2026" homeLabel="← Voltar para a home" tocLabel="Legal">
+    <p>Esta Política de Privacidade explica como a <strong>Onswer</strong> ("nós") coleta, usa e protege informações quando você usa <strong>onswer.app</strong> e nossa ferramenta de audit grátis. Curta e direta.</p>
+
+    <h2>1. O que coletamos</h2>
+    <p>Quando você roda um audit grátis, coletamos:</p>
+    <ul>
+      <li><strong>O domínio que você envia</strong> (ex: <code>exemplo.com</code>).</li>
+      <li><strong>Seu endereço de email</strong>.</li>
+      <li>Seu <strong>endereço IP</strong> e <strong>user-agent</strong>, usados para prevenir abuso.</li>
+      <li>Os <strong>dados do audit de IA</strong> gerados para esse domínio: queries feitas, respostas dos modelos, menções detectadas, recomendações produzidas.</li>
+    </ul>
+    <p><strong>Não</strong> coletamos mais nada: sem fingerprinting, sem ads comportamentais, sem trackers de terceiros além dos analíticos listados na seção 4.</p>
+
+    <h2>2. Por que coletamos</h2>
+    <ul>
+      <li><strong>Para rodar seu audit</strong>: o domínio é enviado a vários modelos de IA via nosso parceiro de infraestrutura OpenRouter para gerar o relatório.</li>
+      <li><strong>Para devolver seus resultados</strong>: cada audit recebe uma URL única; o email é usado para confirmar a requisição e contatar você sobre o resultado.</li>
+      <li><strong>Para prevenir abuso</strong>: a tripla IP + email + domínio nos permite aplicar limites no tier grátis.</li>
+      <li><strong>Para enviar follow-ups relevantes</strong>: se o seu audit mostrar lacunas claras, podemos enviar dicas de como corrigir. Você pode optar por sair de cada email em um clique.</li>
+    </ul>
+
+    <h2>3. Terceiros que processam seus dados</h2>
+    <p>Usamos o menor conjunto possível de fornecedores:</p>
+    <ul>
+      <li><strong>OpenRouter</strong> — roda as queries de LLM que alimentam os audits. Recebe o domínio e o texto da query, não seu email nem IP.</li>
+      <li><strong>Vercel</strong> — hospeda o site público (<code>onswer.app</code>).</li>
+      <li><strong>Anthropic</strong> — provedor de modelos para geração de queries e análise de recomendações.</li>
+      <li><strong>Provedor de hospedagem</strong> para a API e o banco de dados (localizados na UE/EUA — informamos a região exata sob pedido).</li>
+    </ul>
+    <p>Não vendemos seus dados. Nunca.</p>
+
+    <h2>4. Analytics e cookies</h2>
+    <p>Usamos uma stack analítica mínima:</p>
+    <ul>
+      <li><strong>Google Analytics 4</strong> para estatísticas agregadas de tráfego (páginas vistas, bounce, geografia). Baseado em cookies.</li>
+      <li><strong>Meta Pixel</strong> para atribuição de aquisição paga. Baseado em cookies.</li>
+    </ul>
+    <p>Você pode desabilitar via controles de privacidade do navegador, ad-blocker, ou recusando o banner de cookies onde a lei exigir.</p>
+
+    <h2>5. Por quanto tempo guardamos</h2>
+    <ul>
+      <li><strong>Audits grátis e seus resultados</strong>: até 12 meses, então anonimizados ou apagados.</li>
+      <li><strong>Email (só audit, sem conta)</strong>: até 12 meses, salvo se você pedir antes.</li>
+      <li><strong>Logs (IP, user-agent)</strong>: 90 dias para investigação de abuso, então rotacionados.</li>
+    </ul>
+
+    <h2>6. Seus direitos</h2>
+    <p>Onde quer que você more (LGPD no Brasil, GDPR na UE, CCPA na Califórnia, ou nenhuma lei específica), honramos esses direitos padrão:</p>
+    <ul>
+      <li><strong>Acesso</strong>: peça o que temos sobre você.</li>
+      <li><strong>Exclusão</strong>: peça para apagarmos.</li>
+      <li><strong>Correção</strong>: peça para corrigirmos qualquer coisa errada.</li>
+      <li><strong>Portabilidade</strong>: peça para exportarmos seus dados em JSON.</li>
+      <li><strong>Oposição</strong>: peça para pararmos de processar seus dados.</li>
+    </ul>
+    <p>Envie qualquer um desses pedidos para <a href="mailto:privacy@onswer.app">privacy@onswer.app</a>. Respondemos em até 30 dias, normalmente antes.</p>
+
+    <h2>7. Crianças</h2>
+    <p>A Onswer não é destinada a menores de 16 anos. Não coletamos dados de menores de forma consciente. Se acreditar que coletamos, envie email para <a href="mailto:privacy@onswer.app">privacy@onswer.app</a> e apagaremos.</p>
+
+    <h2>8. Segurança</h2>
+    <p>Usamos HTTPS em todo lugar, senhas com hash (bcrypt) quando houver contas, prepared statements em SQL, e infraestrutura com práticas de segurança auditadas. Nenhum sistema é perfeito; se ocorrer uma brecha afetando você, notificaremos em até 72h, conforme exigido pela LGPD/GDPR.</p>
+
+    <h2>9. Mudanças</h2>
+    <p>Se mudarmos esta política de forma material, atualizaremos a data "Effective" acima e notificaremos usuários com audits ativos por email com pelo menos 14 dias de antecedência.</p>
+
+    <h2>10. Contato</h2>
+    <p>Para qualquer coisa relacionada a privacidade: <a href="mailto:privacy@onswer.app">privacy@onswer.app</a>.<br/>Para o resto: <a href="mailto:hello@onswer.app">hello@onswer.app</a>.</p>
+  </LegalLayout>
+  <Footer locale={locale} />
+</BaseLayout>

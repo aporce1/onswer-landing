@@ -1,0 +1,97 @@
+---
+import type { Locale } from '@i18n/index';
+import { t } from '@i18n/index';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const d = t(locale).llms;
+
+// Brand-coloured chips. Real PNG logos can drop in later.
+const MODELS = [
+  { name: 'ChatGPT',     color: '#10A37F' },
+  { name: 'Claude',      color: '#D97757' },
+  { name: 'Gemini',      color: '#4285F4' },
+  { name: 'Perplexity',  color: '#20808D' },
+  { name: 'Mistral',     color: '#F54E00' },
+  { name: 'Llama',       color: '#0866FF' },
+  { name: 'GPT-4o',      color: '#10A37F' },
+  { name: 'Sonnet',      color: '#D97757' },
+  { name: 'Haiku',       color: '#D97757' },
+  { name: 'Gemini Flash',color: '#4285F4' },
+];
+---
+
+<section class="relative py-24 sm:py-28 overflow-hidden">
+  <div class="max-w-5xl mx-auto px-6 lg:px-10 text-center" data-reveal>
+    <span class="pill"><span class="dot"></span>{d.pill}</span>
+    <h2 class="mt-6 font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-balance">
+      {d.title}
+    </h2>
+    <p class="mt-5 text-base text-[var(--color-ink-secondary)] leading-relaxed max-w-2xl mx-auto text-balance">
+      {d.subline}
+    </p>
+  </div>
+
+  <!-- Marquee — infinite, pauses on hover -->
+  <div class="mt-14 relative marquee-mask">
+    <div class="marquee-track">
+      <div class="marquee-set">
+        {MODELS.map(({ name, color }) => (
+          <div class="model-chip">
+            <span class="model-dot" style={`background:${color}; box-shadow: 0 0 16px ${color}55`}></span>
+            <span class="font-semibold tracking-tight whitespace-nowrap">{name}</span>
+          </div>
+        ))}
+      </div>
+      <div class="marquee-set" aria-hidden="true">
+        {MODELS.map(({ name, color }) => (
+          <div class="model-chip">
+            <span class="model-dot" style={`background:${color}; box-shadow: 0 0 16px ${color}55`}></span>
+            <span class="font-semibold tracking-tight whitespace-nowrap">{name}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .marquee-mask {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, black 8%, black 92%, transparent 100%);
+            mask-image: linear-gradient(to right, transparent 0, black 8%, black 92%, transparent 100%);
+  }
+  .marquee-track {
+    display: flex;
+    gap: 1.5rem;
+    width: max-content;
+    animation: marquee-scroll 32s linear infinite;
+  }
+  .marquee-track:hover { animation-play-state: paused; }
+  .marquee-set {
+    display: flex;
+    gap: 1.5rem;
+    flex-shrink: 0;
+  }
+  .model-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.85rem 1.4rem;
+    border-radius: 9999px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    box-shadow: 0 4px 16px -6px rgba(15, 23, 42, 0.06);
+  }
+  .model-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 9999px;
+  }
+  @keyframes marquee-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(calc(-50% - 0.75rem)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track { animation: none; }
+  }
+</style>

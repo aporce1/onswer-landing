@@ -1,0 +1,76 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import LegalLayout from '@components/LegalLayout.astro';
+import Footer from '@components/Footer.astro';
+
+const locale = 'pt' as const;
+---
+<BaseLayout
+  locale={locale}
+  title="Termos de Serviço — Onswer"
+  description="As regras para usar a Onswer."
+  canonicalPath="/pt/terms"
+>
+  <LegalLayout locale={locale} title="Termos de Serviço" effectiveDate="13 de Maio de 2026" homeLabel="← Voltar para a home" tocLabel="Legal">
+    <p>Estes Termos regem o uso de <strong>onswer.app</strong> e o serviço de audit e monitoramento que ele oferece (o "Serviço"). Ao usar o Serviço você aceita estes Termos.</p>
+
+    <h2>1. O que a Onswer faz</h2>
+    <p>A Onswer consulta modelos de linguagem (ChatGPT, Claude, Gemini, Perplexity, entre outros) com perguntas realistas que um comprador faria sobre seu domínio, detecta se sua marca é mencionada, e produz um relatório estruturado e recomendações. Oferecemos:</p>
+    <ul>
+      <li>Um <strong>snapshot grátis único</strong> por domínio.</li>
+      <li><strong>Planos de monitoramento pagos</strong> que re-escaneiam as mesmas perguntas ao longo do tempo e alertam você sobre mudanças.</li>
+    </ul>
+
+    <h2>2. Uso aceitável</h2>
+    <p>Você pode auditar qualquer domínio que seja seu ou que você tenha permissão explícita para avaliar. Ao submeter um domínio você confirma uma dessas condições.</p>
+    <p>Você NÃO pode usar a Onswer para:</p>
+    <ul>
+      <li>Submeter domínios que não sejam seus e sem razão legítima para auditar em escala.</li>
+      <li>Fazer engenharia reversa, scraping, ou colher dados sistematicamente do Serviço.</li>
+      <li>Burlar nossos limites de uso com emails rotativos, IPs rotativos, ou submissões automatizadas.</li>
+      <li>Usar as recomendações do audit para enganar modelos de IA, manipular escolha do consumidor com conteúdo falso, ou produzir conteúdo que viole as políticas dos provedores de LLM subjacentes.</li>
+    </ul>
+
+    <h2>3. Sua conta e seus audits</h2>
+    <p>Audits grátis não exigem conta; a URL do audit é o seu token de acesso. Trate como senha se quiser manter o snapshot privado.</p>
+    <p>Planos pagos criam uma conta. Você é responsável por manter suas credenciais seguras e pela atividade sob sua conta.</p>
+
+    <h2>4. Pagamento, reembolso, e cancelamento</h2>
+    <p>Planos pagos são cobrados mensal ou anualmente, antecipadamente. Você pode cancelar a qualquer momento na página de cobrança; o plano fica ativo até o fim do período já pago.</p>
+    <p><strong>Reembolsos</strong>: se cancelar dentro de 14 dias da primeira cobrança e não estiver satisfeito, envie email para <a href="mailto:billing@onswer.app">billing@onswer.app</a> e fazemos o reembolso integral, sem perguntas. Depois disso, reembolsos proporcionais ficam a nosso critério.</p>
+
+    <h2>5. Os dados do audit são seus</h2>
+    <p>Sua marca, seu domínio, e os relatórios de audit produzidos para você pertencem a você. Mantemos uma cópia para prover o Serviço (e melhorá-lo de forma agregada, nunca identificada). Você pode pedir exportação ou exclusão a qualquer momento — veja a <a href={`/${locale}/privacy`}>Política de Privacidade</a>.</p>
+
+    <h2>6. O Serviço é nosso</h2>
+    <p>A marca Onswer, o software, prompts, design, e analíticos agregados pertencem a nós. Você recebe uma licença para usar o Serviço enquanto está pagando (ou enquanto está no tier grátis). Você não recebe licença para copiar nem revender.</p>
+
+    <h2>7. Aviso sobre conteúdo gerado por IA</h2>
+    <p>O conteúdo do audit é gerado por LLMs de terceiros. Fazemos o melhor para identificar sinais precisos, mas:</p>
+    <ul>
+      <li>As respostas de IA mudam todo dia — sua visibilidade hoje pode ser diferente amanhã.</li>
+      <li>LLMs alucinam. Não podemos garantir que cada palavra de um excerto de resposta é factual.</li>
+      <li>Recomendações são sugestões, não garantias de que segui-las vai te ranquear mais alto.</li>
+    </ul>
+    <p>Trate o audit como sinal direcional, não como promessa contratual.</p>
+
+    <h2>8. Disponibilidade do Serviço</h2>
+    <p>Buscamos alta disponibilidade mas não oferecemos SLA no tier grátis. Planos pagos têm meta de 99.5% de uptime mensal. Créditos de serviço para indisponibilidades prolongadas em planos pagos podem ser solicitados a <a href="mailto:billing@onswer.app">billing@onswer.app</a>.</p>
+
+    <h2>9. Limitação de responsabilidade</h2>
+    <p>Na maior extensão permitida por lei, nossa responsabilidade total por qualquer reclamação relacionada ao Serviço é limitada ao valor pago a nós nos 12 meses anteriores à reclamação. Não somos responsáveis por danos indiretos, incidentais, ou consequenciais (perda de receita, perda de oportunidade, etc.).</p>
+
+    <h2>10. Encerramento</h2>
+    <p>Você pode parar de usar o Serviço a qualquer momento. Podemos suspender ou encerrar contas que violem estes Termos, abusem do Serviço, ou criem risco legal — normalmente após aviso, exceto em casos graves.</p>
+
+    <h2>11. Mudanças nestes Termos</h2>
+    <p>Se atualizarmos estes Termos de forma material, ajustaremos a data "Effective" e enviaremos email para usuários com planos pagos ativos com pelo menos 14 dias de antecedência. Continuar a usar o Serviço depois significa que você aceita os novos Termos.</p>
+
+    <h2>12. Lei aplicável</h2>
+    <p>Estes Termos são regidos pelas leis do Brasil. Disputas vão para os foros de São Paulo, salvo se uma lei consumerista no seu jurisdição te conceder direitos de foro mais fortes — nesse caso, esses prevalecem.</p>
+
+    <h2>13. Contato</h2>
+    <p>Legal ou cobrança: <a href="mailto:legal@onswer.app">legal@onswer.app</a>.<br/>Para o resto: <a href="mailto:hello@onswer.app">hello@onswer.app</a>.</p>
+  </LegalLayout>
+  <Footer locale={locale} />
+</BaseLayout>

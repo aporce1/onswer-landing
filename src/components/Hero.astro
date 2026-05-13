@@ -1,0 +1,438 @@
+---
+/**
+ * Hero — full-viewport intro with mesh gradient, headline, and the audit form.
+ *
+ * The form posts to `${PUBLIC_API_URL}/v1/audits/free` and redirects on
+ * success to `/{locale}/audit?id=…&email=…`. All client-side, zero auth.
+ */
+
+import type { Locale } from '@i18n/index';
+import { t } from '@i18n/index';
+import Logo from '@components/Logo.astro';
+import HeroStats from '@components/HeroStats.astro';
+import HeroDemoPreview from '@components/HeroDemoPreview.astro';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const d = t(locale);
+
+const apiUrl  = import.meta.env.PUBLIC_API_URL || 'http://api.onswer.local';
+---
+
+<section class="hero-section relative isolate overflow-hidden pt-28 pb-32 sm:pt-32 sm:pb-40 lg:pt-40 lg:pb-48"
+         data-hero-section>
+  <!-- Background layers -->
+  <div class="mesh-bg" aria-hidden="true"></div>
+  <div class="mesh-blob-3" aria-hidden="true"></div>
+  <div class="absolute inset-0 grid-bg pointer-events-none" aria-hidden="true"></div>
+
+  <!-- Cursor-following spotlight (mouse-reactive) -->
+  <div class="hero-spotlight" aria-hidden="true"></div>
+
+  <!-- Floating LLM-colour orbs in the background -->
+  <div class="hero-orbs absolute inset-0 pointer-events-none" aria-hidden="true">
+    <span class="orb" style="--c:#10A37F; --x:8%;  --y:18%; --d:0s;  --dur:14s;"></span>
+    <span class="orb" style="--c:#D97757; --x:88%; --y:22%; --d:2s;  --dur:18s;"></span>
+    <span class="orb" style="--c:#4285F4; --x:14%; --y:72%; --d:4s;  --dur:16s;"></span>
+    <span class="orb" style="--c:#20808D; --x:92%; --y:68%; --d:1s;  --dur:20s;"></span>
+    <span class="orb" style="--c:#F54E00; --x:50%; --y:88%; --d:3s;  --dur:22s;"></span>
+    <span class="orb" style="--c:#0866FF; --x:6%;  --y:48%; --d:5s;  --dur:24s;"></span>
+  </div>
+
+  <!-- Top nav (minimal — logo + a couple of anchors) -->
+  <header class="absolute inset-x-0 top-0 z-30">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
+      <Logo size={36} />
+      <nav class="hidden md:flex items-center gap-8 text-sm text-[var(--color-ink-secondary)]">
+        <a href="#how"     class="hover:text-[var(--color-ink)] transition-colors">{d.nav.audit}</a>
+        <a href="#pricing" class="hover:text-[var(--color-ink)] transition-colors">{d.nav.pricing}</a>
+        <a href="#faq"     class="hover:text-[var(--color-ink)] transition-colors">{d.nav.faq}</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <!-- Language switcher -->
+        <div class="flex items-center gap-0.5 bg-white/70 backdrop-blur border border-[var(--color-line)] rounded-full p-0.5 text-xs">
+          <a href="/en"
+             class={`px-3 py-1.5 rounded-full transition-colors ${locale === 'en' ? 'bg-[var(--color-ink)] text-white' : 'text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)]'}`}>
+            EN
+          </a>
+          <a href="/pt"
+             class={`px-3 py-1.5 rounded-full transition-colors ${locale === 'pt' ? 'bg-[var(--color-ink)] text-white' : 'text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)]'}`}>
+            PT
+          </a>
+        </div>
+        <a href="#hero-form" class="btn-primary text-sm !py-2.5 !px-4 hidden sm:inline-flex">
+          {d.nav.audit}
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero content -->
+  <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 text-center">
+    <div class="pill mx-auto" data-hero-pill>
+      <span class="dot"></span>
+      <span>{d.hero.pill}</span>
+    </div>
+
+    <h1 class="mt-8 font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.05] text-balance"
+        data-hero-title>
+      <span data-hero-word>{d.hero.headlinePre}</span>
+      <span class="typewriter-frame" data-hero-word>
+        <span class="typewriter-ghost" aria-hidden="true">{d.hero.headlineKeyVariants.reduce((a, b) => a.length >= b.length ? a : b)}</span>
+        <span class="typewriter-text gradient-text"
+              data-typewriter
+              data-variants={JSON.stringify(d.hero.headlineKeyVariants)}>{d.hero.headlineKey}</span>
+      </span>
+      <span data-hero-word>{d.hero.headlinePost}</span>
+    </h1>
+
+    <p class="mt-7 text-base sm:text-lg text-[var(--color-ink-secondary)] leading-relaxed max-w-2xl mx-auto text-balance"
+       data-hero-sub>
+      {d.hero.subline}
+    </p>
+
+    <!-- Audit form -->
+    <form id="hero-form"
+          class="mt-10 mx-auto max-w-2xl"
+          data-locale={locale}
+          data-api-url={apiUrl}
+          data-hero-form
+          novalidate>
+      <div class="flex flex-col sm:flex-row gap-3 items-stretch">
+        <input
+          type="text"
+          name="domain"
+          required
+          autocomplete="off"
+          class="input flex-1"
+          placeholder={d.hero.formDomain}
+          aria-label="Domain"
+          data-field="domain"
+        />
+        <input
+          type="email"
+          name="email"
+          required
+          autocomplete="email"
+          class="input flex-1"
+          placeholder={d.hero.formEmail}
+          aria-label="Email"
+          data-field="email"
+        />
+        <button type="submit" class="btn-primary text-base !py-4 !px-7 shrink-0" data-submit>
+          <span data-cta-label>{d.hero.formCta}</span>
+          <svg data-cta-spinner class="hidden w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25"/>
+            <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <svg data-cta-arrow class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+      </div>
+
+      <p class="mt-3 text-xs text-[var(--color-ink-muted)] flex items-center justify-center gap-1.5" data-hero-hint>
+        <svg class="w-3.5 h-3.5 text-[var(--color-accent-glow)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <polyline points="9 12 11 14 15 10"/>
+        </svg>
+        {d.hero.formHint}
+      </p>
+
+      <p data-hero-error class="hidden mt-4 text-sm text-[var(--color-danger)] text-center" role="alert"></p>
+    </form>
+
+    <!-- Animated stats row -->
+    <HeroStats locale={locale} />
+  </div>
+
+  <!-- The wow moment — floating demo audit card -->
+  <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10">
+    <HeroDemoPreview locale={locale} />
+  </div>
+</section>
+
+<style>
+  /* Cursor-following spotlight — radial glow that tracks mouse */
+  .hero-spotlight {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(
+      400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(124, 58, 237, 0.12),
+      transparent 70%
+    );
+    opacity: 0;
+    transition: opacity .6s ease;
+  }
+  .hero-section:hover .hero-spotlight {
+    opacity: 1;
+  }
+
+  /* Floating LLM-colour orbs — small blurred spheres drifting */
+  .orb {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 9999px;
+    background: var(--c);
+    opacity: 0.18;
+    filter: blur(20px);
+    left: var(--x);
+    top: var(--y);
+    animation: orbFloat var(--dur, 18s) ease-in-out var(--d, 0s) infinite;
+    mix-blend-mode: multiply;
+  }
+  @keyframes orbFloat {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    33%      { transform: translate3d(20px, -30px, 0) scale(1.15); }
+    66%      { transform: translate3d(-25px, 25px, 0) scale(0.92); }
+  }
+
+  /* Typewriter wrapper — reserves space for the longest variant so the
+     headline never reflows mid-animation. */
+  .typewriter-frame {
+    position: relative;
+    display: inline-block;
+    vertical-align: baseline;
+    white-space: nowrap;
+  }
+  .typewriter-ghost {
+    visibility: hidden;
+    pointer-events: none;
+    user-select: none;
+  }
+  .typewriter-text {
+    position: absolute;
+    inset: 0;
+    text-align: left;
+  }
+  /* Blinking AI-typing cursor sits right after the current text. */
+  .typewriter-text::after {
+    content: '';
+    display: inline-block;
+    width: 0.07em;
+    height: 0.85em;
+    margin-left: 0.08em;
+    vertical-align: -0.02em;
+    background: linear-gradient(180deg, #7C3AED, #06B6D4);
+    border-radius: 2px;
+    animation: blink 1.1s steps(2, start) infinite;
+    box-shadow: 0 0 12px rgba(124, 58, 237, 0.45);
+  }
+  @keyframes blink {
+    0%, 49%   { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .orb { animation: none; }
+    .typewriter-text::after { animation: none; opacity: 1; }
+  }
+</style>
+
+<script>
+  // ---- Form submit handler ----
+  const form  = document.getElementById('hero-form') as HTMLFormElement | null;
+  if (form) {
+    const apiUrl = form.dataset.apiUrl || '';
+    const locale = form.dataset.locale || 'en';
+    const errBox = form.querySelector('[data-hero-error]') as HTMLElement | null;
+    const submitBtn = form.querySelector('[data-submit]') as HTMLButtonElement | null;
+    const ctaLabel  = form.querySelector('[data-cta-label]') as HTMLElement | null;
+    const ctaSpinner = form.querySelector('[data-cta-spinner]') as HTMLElement | null;
+    const ctaArrow   = form.querySelector('[data-cta-arrow]') as HTMLElement | null;
+
+    const messages = {
+      en: {
+        invalidDomain: 'Enter a valid domain (e.g. yourdomain.com).',
+        invalidEmail:  'Enter a valid email address.',
+        rateLimited:   'Too many requests. Try again in a moment.',
+        network:       'Network error. Check your connection and try again.',
+        server:        'Something went wrong. Please retry.',
+      },
+      pt: {
+        invalidDomain: 'Informe um domínio válido (ex: seudominio.com).',
+        invalidEmail:  'Informe um email válido.',
+        rateLimited:   'Muitas tentativas. Tente novamente em instantes.',
+        network:       'Erro de rede. Verifique sua conexão.',
+        server:        'Algo deu errado. Por favor, tente novamente.',
+      },
+    } as const;
+    const M = (messages as any)[locale] || messages.en;
+
+    const showError = (msg: string) => {
+      if (errBox) {
+        errBox.textContent = msg;
+        errBox.classList.remove('hidden');
+      }
+    };
+    const clearError = () => {
+      if (errBox) errBox.classList.add('hidden');
+    };
+
+    const setLoading = (loading: boolean) => {
+      if (!submitBtn) return;
+      submitBtn.disabled = loading;
+      ctaLabel?.classList.toggle('opacity-60', loading);
+      ctaSpinner?.classList.toggle('hidden', !loading);
+      ctaArrow?.classList.toggle('hidden', loading);
+    };
+
+    const cleanDomain = (raw: string): string => {
+      return raw.trim().toLowerCase()
+        .replace(/^https?:\/\//, '')
+        .replace(/^www\./, '')
+        .replace(/\/.*$/, '');
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearError();
+
+      const fd = new FormData(form);
+      const domain = cleanDomain(String(fd.get('domain') || ''));
+      const email  = String(fd.get('email') || '').trim().toLowerCase();
+
+      if (!/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(domain)) {
+        showError(M.invalidDomain);
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showError(M.invalidEmail);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const r = await fetch(apiUrl + '/v1/audits/free', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ domain, email, locale }),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok || !data?.ok) {
+          if (r.status === 429) {
+            showError(M.rateLimited);
+          } else if (r.status >= 500) {
+            showError(M.server);
+          } else {
+            const msg = data?.error || data?.details?.fields?.domain || data?.details?.fields?.email || M.server;
+            showError(msg);
+          }
+          setLoading(false);
+          return;
+        }
+        const auditId = data?.data?.audit_id;
+        if (!auditId) {
+          showError(M.server);
+          setLoading(false);
+          return;
+        }
+        // Redirect to result page (built in next sprint; for now lands here as a placeholder).
+        // Public audit URL — just the id, no email exposed. Shareable as-is.
+        window.location.href = `/${locale}/audit?id=${encodeURIComponent(String(auditId))}`;
+      } catch (err) {
+        showError(M.network);
+        setLoading(false);
+      }
+    });
+  }
+
+  // ---- GSAP-powered entrance ----
+  (async () => {
+    try {
+      const gsapMod = await import('gsap');
+      const gsap = gsapMod.default ?? gsapMod.gsap ?? gsapMod;
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      tl.from('[data-hero-pill]',  { opacity: 0, y: 14, duration: 0.6 })
+        .from('[data-hero-word]',  { opacity: 0, y: 28, duration: 0.85, stagger: 0.08 }, '-=0.25')
+        .from('[data-hero-sub]',   { opacity: 0, y: 16, duration: 0.7 }, '-=0.45')
+        .from('[data-hero-form]',  { opacity: 0, y: 18, duration: 0.7 }, '-=0.5')
+        .from('[data-hero-hint]',  { opacity: 0, duration: 0.6 }, '-=0.4')
+        .from('[data-hero-stats] > *', { opacity: 0, y: 16, duration: 0.5, stagger: 0.08 }, '-=0.3')
+        .from('[data-demo-card]', { opacity: 0, y: 60, scale: 0.94, duration: 1, ease: 'power3.out' }, '-=0.3');
+    } catch (_) {
+      // GSAP unavailable — content stays visible
+    }
+  })();
+
+  // ---- Cursor-following spotlight on hero ----
+  (() => {
+    const hero = document.querySelector<HTMLElement>('[data-hero-section]');
+    if (!hero) return;
+    let rafId = 0;
+    let pendingX = 0, pendingY = 0;
+    const apply = () => {
+      hero.style.setProperty('--mouse-x', pendingX + 'px');
+      hero.style.setProperty('--mouse-y', pendingY + 'px');
+      rafId = 0;
+    };
+    hero.addEventListener('mousemove', (e) => {
+      const rect = hero.getBoundingClientRect();
+      pendingX = e.clientX - rect.left;
+      pendingY = e.clientY - rect.top;
+      if (!rafId) rafId = requestAnimationFrame(apply);
+    });
+  })();
+
+  // ---- Typewriter on the headline keyword ----
+  (() => {
+    const el = document.querySelector<HTMLElement>('[data-typewriter]');
+    if (!el) return;
+
+    // Respect prefers-reduced-motion — leave the static fallback in place.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    let variants: string[] = [];
+    try {
+      variants = JSON.parse(el.dataset.variants || '[]');
+    } catch { /* malformed — keep static */ }
+    if (!Array.isArray(variants) || variants.length === 0) return;
+
+    const TYPE_MS    = 70;     // ms per char while typing
+    const DELETE_MS  = 32;     // ms per char while deleting
+    const HOLD_MS    = 1800;   // pause on a fully-typed word
+    const GAP_MS     = 320;    // pause after deletion before next word
+    const START_MS   = 2200;   // wait for GSAP intro to settle
+
+    let idx     = 0;
+    let current = '';
+    let typing  = true;
+
+    const tick = () => {
+      const target = variants[idx];
+      if (typing) {
+        current = target.slice(0, current.length + 1);
+        el.textContent = current;
+        if (current === target) {
+          typing = false;
+          setTimeout(tick, HOLD_MS);
+        } else {
+          setTimeout(tick, TYPE_MS);
+        }
+      } else {
+        current = current.slice(0, -1);
+        el.textContent = current;
+        if (current === '') {
+          typing = true;
+          idx = (idx + 1) % variants.length;
+          setTimeout(tick, GAP_MS);
+        } else {
+          setTimeout(tick, DELETE_MS);
+        }
+      }
+    };
+
+    setTimeout(() => {
+      current = '';
+      el.textContent = '';
+      tick();
+    }, START_MS);
+  })();
+</script>

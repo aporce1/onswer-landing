@@ -1,0 +1,42 @@
+---
+/**
+ * Root redirect. The whole landing lives under /en and /pt; this page
+ * sniffs the visitor's browser locale and forwards.
+ *
+ * Pure static — no SSR. Crawlers see the English default (meta refresh + JS).
+ */
+const title = 'Onswer — Does AI mention your brand?';
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{title}</title>
+  <meta name="robots" content="noindex" />
+  <link rel="canonical" href="https://onswer.app/en" />
+  <link rel="alternate" hreflang="en"        href="https://onswer.app/en" />
+  <link rel="alternate" hreflang="pt-BR"     href="https://onswer.app/pt" />
+  <link rel="alternate" hreflang="x-default" href="https://onswer.app/en" />
+  <meta http-equiv="refresh" content="0;url=/en" />
+  <script is:inline>
+    (function () {
+      try {
+        var lang = (navigator.language || 'en').toLowerCase();
+        var target = lang.startsWith('pt') ? '/pt' : '/en';
+        window.location.replace(target);
+      } catch (e) {
+        window.location.replace('/en');
+      }
+    })();
+  </script>
+  <style>
+    body { background:#FAFAF7; color:#6B7280; font-family: system-ui, sans-serif; }
+    main { display:grid; place-items:center; min-height:100vh; padding:2rem; text-align:center; }
+  </style>
+</head>
+<body>
+  <main>
+    <p>Redirecting to <a href="/en" style="color:#4F46E5">Onswer</a>…</p>
+  </main>
+</body>
+</html>

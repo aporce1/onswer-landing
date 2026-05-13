@@ -1,0 +1,270 @@
+---
+/**
+ * The "wow moment" — a floating mock audit card under the hero form.
+ *
+ * Shows what a real audit looks like for a known brand (notion.so) with
+ * animated counters, fading-in LLM rows, and a peeking recommendation tile.
+ *
+ * Pure CSS + Web Animations; no JS dependencies.
+ */
+import type { Locale } from '@i18n/index';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+
+const labels = locale === 'pt' ? {
+  liveScan:        'Audit ao vivo',
+  visibility:      'Visibilidade',
+  thisWeek:        '+12% esta semana',
+  llmHeader:       'Modelos consultados',
+  mentioned:       'mencionado',
+  not:             'não mencionado',
+  recoLabel:       'Próxima ação',
+  recoTitle:       'Adicione FAQPage schema em /pricing',
+  recoBody:        'O Claude cita comparações de preço em 6 respostas, mas não cita notion.so.',
+  example:         'Exemplo real · notion.so',
+} : {
+  liveScan:        'Live audit',
+  visibility:      'Visibility',
+  thisWeek:        '+12% this week',
+  llmHeader:       'Models queried',
+  mentioned:       'mentioned',
+  not:             'not mentioned',
+  recoLabel:       'Next action',
+  recoTitle:       'Add FAQPage schema on /pricing',
+  recoBody:        'Claude cites pricing comparisons in 6 answers but never cites notion.so.',
+  example:         'Real example · notion.so',
+};
+
+const LLMS = [
+  { name: 'ChatGPT',    color: '#10A37F', mentioned: true,  position: '#1' },
+  { name: 'Claude',     color: '#D97757', mentioned: true,  position: '#1' },
+  { name: 'Gemini',     color: '#4285F4', mentioned: true,  position: '#2' },
+  { name: 'Perplexity', color: '#20808D', mentioned: true,  position: '#1' },
+  { name: 'Mistral',    color: '#F54E00', mentioned: false, position: '—' },
+];
+---
+
+<div class="hero-demo relative mx-auto mt-16 max-w-3xl" data-demo-card>
+  <!-- Glow halo behind the card -->
+  <div class="absolute -inset-8 -z-10 pointer-events-none">
+    <div class="absolute inset-0 rounded-[2rem]"
+         style="background: radial-gradient(60% 80% at 50% 30%, rgba(124,58,237,0.25), transparent 70%);
+                filter: blur(50px);"></div>
+  </div>
+
+  <!-- The card itself, slightly tilted -->
+  <div class="demo-card relative bg-white border border-[var(--color-line)] rounded-2xl overflow-hidden"
+       style="transform: perspective(1200px) rotateX(2deg);
+              box-shadow: 0 50px 100px -30px rgba(79, 70, 229, 0.32),
+                          0 20px 40px -20px rgba(15, 23, 42, 0.12);">
+    <!-- Top "live" bar -->
+    <div class="flex items-center justify-between px-5 py-3 border-b border-[var(--color-line)] bg-[var(--color-surface-2)]/60">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-[#10B981] live-dot"></span>
+        <span class="text-xs font-medium text-[var(--color-ink-secondary)]">{labels.liveScan}</span>
+      </div>
+      <div class="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-[var(--color-ink-muted)] font-mono">
+        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+        {labels.example}
+      </div>
+    </div>
+
+    <div class="p-6 sm:p-8 grid sm:grid-cols-[auto,1fr] gap-7 items-start">
+      <!-- Score ring -->
+      <div class="flex flex-col items-center gap-3">
+        <div class="score-ring relative" style="--score: 0.97">
+          <svg viewBox="0 0 100 100" class="w-32 h-32">
+            <defs>
+              <linearGradient id="demoScoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%"  stop-color="#4F46E5"/>
+                <stop offset="50%" stop-color="#7C3AED"/>
+                <stop offset="100%" stop-color="#06B6D4"/>
+              </linearGradient>
+            </defs>
+            <!-- Track -->
+            <circle cx="50" cy="50" r="42" fill="none" stroke="#E5E5EA" stroke-width="8"/>
+            <!-- Progress -->
+            <circle class="score-progress" cx="50" cy="50" r="42" fill="none"
+                    stroke="url(#demoScoreGrad)" stroke-width="8" stroke-linecap="round"
+                    pathLength="100" stroke-dasharray="100" stroke-dashoffset="3"
+                    transform="rotate(-90 50 50)"/>
+          </svg>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <span class="text-4xl font-bold gradient-text counter-num" data-target="97">0</span>
+          </div>
+        </div>
+        <div class="text-center">
+          <p class="text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-muted)] font-medium">{labels.visibility}</p>
+          <p class="mt-1 inline-flex items-center gap-1 text-[11px] text-[#10B981] font-medium">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="18 15 12 9 6 15"/>
+            </svg>
+            {labels.thisWeek}
+          </p>
+        </div>
+      </div>
+
+      <!-- LLM rows -->
+      <div>
+        <p class="text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-muted)] font-medium mb-3">
+          {labels.llmHeader}
+        </p>
+        <ul class="space-y-2.5">
+          {LLMS.map(({ name, color, mentioned, position }, i) => (
+            <li class="llm-row flex items-center justify-between text-sm py-2 px-3 -mx-3 rounded-lg" style={`--delay: ${0.4 + i * 0.12}s`}>
+              <div class="flex items-center gap-2.5">
+                <span class="w-2 h-2 rounded-full" style={`background:${color}; box-shadow: 0 0 10px ${color}80`}></span>
+                <span class="font-medium text-[var(--color-ink)]">{name}</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class={mentioned ? 'text-[#10B981]' : 'text-[var(--color-ink-muted)]'}>
+                  <span class="inline-flex items-center gap-1.5">
+                    {mentioned ? (
+                      <>
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        <span class="text-xs">{labels.mentioned}</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                          <line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/>
+                        </svg>
+                        <span class="text-xs">{labels.not}</span>
+                      </>
+                    )}
+                  </span>
+                </span>
+                <span class="text-xs font-mono text-[var(--color-ink-muted)] w-6 text-right">{position}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Recommendation peek at the bottom -->
+    <div class="border-t border-[var(--color-line)] bg-[var(--color-surface-2)]/40 px-6 sm:px-8 py-5 reco-peek">
+      <div class="flex items-start gap-3">
+        <div class="w-9 h-9 rounded-lg grid place-items-center text-white shrink-0"
+             style="background: linear-gradient(135deg,#4F46E5,#7C3AED);">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-[10px] uppercase tracking-[0.18em] text-[var(--color-accent-glow)] font-semibold">
+            {labels.recoLabel}
+          </p>
+          <p class="mt-0.5 text-sm font-semibold text-[var(--color-ink)]">{labels.recoTitle}</p>
+          <p class="mt-1 text-xs text-[var(--color-ink-secondary)] leading-relaxed">{labels.recoBody}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Card hover effect — lifts and reduces tilt */
+  .hero-demo {
+    perspective: 1200px;
+  }
+  .demo-card {
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.6s ease;
+  }
+  .demo-card:hover {
+    transform: perspective(1200px) rotateX(0deg) translateY(-6px) !important;
+    box-shadow: 0 60px 120px -30px rgba(79, 70, 229, 0.42),
+                0 25px 50px -20px rgba(15, 23, 42, 0.15);
+  }
+
+  /* Score ring animation — draws on viewport entry */
+  .score-progress {
+    animation: scoreFill 2.2s cubic-bezier(0.4, 0, 0.2, 1) 0.4s forwards;
+    stroke-dashoffset: 100;
+  }
+  @keyframes scoreFill {
+    to { stroke-dashoffset: 3; } /* 97% of 100 */
+  }
+
+  /* Counter animation — replaced live by JS */
+  .counter-num {
+    display: inline-block;
+    min-width: 2.5ch;
+    text-align: center;
+  }
+
+  /* Live indicator pulse */
+  .live-dot {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55);
+    animation: livePulse 1.8s ease-in-out infinite;
+  }
+  @keyframes livePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55); }
+    50%      { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+  }
+
+  /* LLM rows fade in staggered */
+  .llm-row {
+    opacity: 0;
+    transform: translateX(-10px);
+    animation: rowSlideIn 0.55s cubic-bezier(0.4, 0, 0.2, 1) var(--delay, 0.4s) forwards;
+    transition: background-color 0.2s ease;
+  }
+  .llm-row:hover {
+    background: rgba(124, 58, 237, 0.04);
+  }
+  @keyframes rowSlideIn {
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* Recommendation peek slides up after rows finish */
+  .reco-peek {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: peekUp 0.7s cubic-bezier(0.4, 0, 0.2, 1) 1.4s forwards;
+  }
+  @keyframes peekUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .score-progress, .counter-num, .live-dot, .llm-row, .reco-peek {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+    .score-progress { stroke-dashoffset: 3; }
+  }
+</style>
+
+<script>
+  // Animate the visibility counter once the demo card enters the viewport.
+  document.addEventListener('DOMContentLoaded', () => {
+    const els = document.querySelectorAll<HTMLElement>('.counter-num[data-target]');
+    els.forEach((el) => {
+      const target = parseInt(el.dataset.target || '0', 10);
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return;
+          obs.unobserve(e.target);
+          const duration = 2000;
+          const start = performance.now();
+          const tick = (now: number) => {
+            const t = Math.min(1, (now - start) / duration);
+            const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+            const value = Math.round(target * eased);
+            el.textContent = String(value);
+            if (t < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        });
+      }, { threshold: 0.5 });
+      observer.observe(el);
+    });
+  });
+</script>

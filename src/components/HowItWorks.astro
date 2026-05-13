@@ -1,0 +1,46 @@
+---
+import type { Locale } from '@i18n/index';
+import { t } from '@i18n/index';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const d = t(locale).how;
+
+const ICONS: Record<string, string> = {
+  'globe':         '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+  'cpu':           '<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/>',
+  'check-circle':  '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+};
+---
+
+<section id="how" class="relative py-24 sm:py-32 lg:py-40 bg-[var(--color-surface-2)] border-y border-[var(--color-line)]">
+  <div class="max-w-6xl mx-auto px-6 lg:px-10">
+    <div class="text-center max-w-2xl mx-auto" data-reveal>
+      <span class="pill"><span class="dot"></span>{d.pill}</span>
+      <h2 class="mt-6 font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-balance">
+        {d.title}
+      </h2>
+    </div>
+
+    <div class="mt-16 grid md:grid-cols-3 gap-6 relative" data-reveal>
+      <!-- Connector line between cards on desktop -->
+      <div class="hidden md:block absolute top-12 left-[12%] right-[12%] h-px
+                  bg-gradient-to-r from-transparent via-[#7C3AED]/40 to-transparent
+                  pointer-events-none"></div>
+
+      {d.items.map(({ n, icon, title, body }) => (
+        <article class="card p-7 relative bg-[var(--color-surface)]">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-xs text-[var(--color-ink-muted)]">{n}</span>
+            <div class="w-11 h-11 rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-line)] grid place-items-center text-[var(--color-accent-glow)]">
+              <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round" set:html={ICONS[icon] || ''} />
+            </div>
+          </div>
+          <h3 class="mt-6 font-semibold text-lg">{title}</h3>
+          <p class="mt-2 text-sm text-[var(--color-ink-secondary)] leading-relaxed">{body}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

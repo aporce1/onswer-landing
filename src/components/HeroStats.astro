@@ -1,0 +1,75 @@
+---
+/**
+ * Inline stats strip below the hero form. Four counters that animate when
+ * they enter the viewport. Reinforces the value prop in 4 numbers.
+ */
+import type { Locale } from '@i18n/index';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+
+const labels = locale === 'pt' ? {
+  llms:     'modelos de IA',
+  markets:  'mercados',
+  seconds:  'segundos',
+  cost:     'para começar',
+} : {
+  llms:     'AI models',
+  markets:  'markets',
+  seconds:  'seconds',
+  cost:     'to start',
+};
+
+const STATS = [
+  { target: 10,  suffix: '+', label: labels.llms,    icon: 'cpu' },
+  { target: 3,   suffix: '',  label: labels.markets, icon: 'globe' },
+  { target: 60,  suffix: 's', label: labels.seconds, icon: 'clock' },
+  { target: 0,   prefix: '$', label: labels.cost,    icon: 'gift' },
+];
+
+const ICONS: Record<string, string> = {
+  cpu:   '<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M20 9h2M20 14h2M2 9h2M2 14h2"/>',
+  globe: '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/>',
+  clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  gift:  '<polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>',
+};
+---
+
+<div class="mt-14 mx-auto max-w-3xl grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4" data-hero-stats>
+  {STATS.map(({ target, prefix, suffix, label, icon }) => (
+    <div class="stat-card group">
+      <div class="flex items-center justify-center gap-1.5 mb-1.5">
+        <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-[var(--color-accent-glow)]"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round"
+             set:html={ICONS[icon] || ''} />
+      </div>
+      <div class="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--color-ink)]">
+        {prefix || ''}<span class="counter-num" data-target={target}>0</span>{suffix || ''}
+      </div>
+      <p class="mt-1 text-xs text-[var(--color-ink-muted)]">{label}</p>
+    </div>
+  ))}
+</div>
+
+<style>
+  .stat-card {
+    text-align: center;
+    padding: 0.85rem 0.5rem;
+    border-radius: 0.85rem;
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(229, 229, 234, 0.7);
+    transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+  }
+  .stat-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(124, 58, 237, 0.3);
+    box-shadow: 0 12px 28px -16px rgba(79, 70, 229, 0.35);
+  }
+  .counter-num {
+    display: inline-block;
+    min-width: 1ch;
+  }
+</style>

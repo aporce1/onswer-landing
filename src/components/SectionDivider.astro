@@ -1,0 +1,51 @@
+---
+/**
+ * Thin animated divider between sections — gives the eye a rhythm point
+ * without adding heavy chrome.
+ */
+---
+
+<div class="section-divider relative flex items-center justify-center my-0 py-6" aria-hidden="true">
+  <span class="divider-line"></span>
+  <span class="divider-orb"></span>
+  <span class="divider-line"></span>
+</div>
+
+<style>
+  .section-divider {
+    pointer-events: none;
+  }
+  .divider-line {
+    flex: 1;
+    max-width: 240px;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      rgba(124, 58, 237, 0.3) 50%,
+      transparent 100%
+    );
+  }
+  .divider-orb {
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #4F46E5, #7C3AED);
+    margin: 0 1.5rem;
+    box-shadow: 0 0 18px rgba(124, 58, 237, 0.55);
+    animation: orbPulse 3s ease-in-out infinite;
+  }
+  @keyframes orbPulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 18px rgba(124, 58, 237, 0.55);
+    }
+    50% {
+      transform: scale(1.15);
+      box-shadow: 0 0 26px rgba(124, 58, 237, 0.8);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .divider-orb { animation: none; }
+  }
+</style>

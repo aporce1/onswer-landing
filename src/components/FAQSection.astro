@@ -1,0 +1,52 @@
+---
+import type { Locale } from '@i18n/index';
+import { t } from '@i18n/index';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const d = t(locale).faq;
+---
+
+<section id="faq" class="relative py-24 sm:py-32 lg:py-40 bg-[var(--color-surface-2)] border-y border-[var(--color-line)]">
+  <div class="max-w-3xl mx-auto px-6 lg:px-10">
+    <div class="text-center" data-reveal>
+      <span class="pill"><span class="dot"></span>{d.pill}</span>
+      <h2 class="mt-6 font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-balance">
+        {d.title}
+      </h2>
+    </div>
+
+    <div class="mt-14 space-y-3" data-reveal>
+      {d.items.map(({ q, a }, i) => (
+        <details class="faq-card group" {...(i === 0 ? { open: true } : {})}>
+          <summary class="cursor-pointer list-none flex items-center justify-between gap-6 px-6 py-5
+                          font-medium text-[var(--color-ink)] hover:bg-[var(--color-surface-2)] transition-colors">
+            <span>{q}</span>
+            <svg class="w-4 h-4 shrink-0 text-[var(--color-ink-muted)] transition-transform group-open:rotate-180"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </summary>
+          <div class="px-6 pb-6 text-sm text-[var(--color-ink-secondary)] leading-relaxed">
+            {a}
+          </div>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: border-color .25s ease, box-shadow .25s ease;
+  }
+  .faq-card[open] {
+    border-color: rgba(124, 58, 237, 0.35);
+    box-shadow: 0 10px 30px -15px rgba(79, 70, 229, 0.15);
+  }
+  .faq-card summary::-webkit-details-marker { display: none; }
+</style>

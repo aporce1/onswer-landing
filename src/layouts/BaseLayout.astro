@@ -1,0 +1,109 @@
+---
+import '@/styles/global.css';
+import type { Locale } from '@i18n/index';
+
+interface Props {
+  locale: Locale;
+  title: string;
+  description: string;
+  ogImage?: string;
+  ogAlt?: string;
+  canonicalPath?: string;   // path without locale prefix, e.g. "/"
+}
+
+const {
+  locale,
+  title,
+  description,
+  ogImage = `/og-${Astro.props.locale}.png`,
+  ogAlt   = title,
+  canonicalPath = Astro.url.pathname,
+} = Astro.props;
+
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://onswer.app';
+const canonical = new URL(canonicalPath, siteUrl).toString();
+const ogImageAbsolute = new URL(ogImage, siteUrl).toString();
+
+// Alternate language URLs for hreflang
+const altPath = canonicalPath.replace(/^\/(en|pt)(\/|$)/, '/$2');
+const enUrl = new URL(`/en${altPath === '/' ? '' : altPath}`, siteUrl).toString();
+const ptUrl = new URL(`/pt${altPath === '/' ? '' : altPath}`, siteUrl).toString();
+---
+
+<!DOCTYPE html>
+<html lang={locale === 'pt' ? 'pt-BR' : 'en'} class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>{title}</title>
+  <meta name="description" content={description} />
+
+  <link rel="canonical" href={canonical} />
+  <link rel="alternate" hreflang="en"     href={enUrl} />
+  <link rel="alternate" hreflang="pt-BR"  href={ptUrl} />
+  <link rel="alternate" hreflang="x-default" href={enUrl} />
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content={canonical} />
+  <meta property="og:title"       content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image"       content={ogImageAbsolute} />
+  <meta property="og:image:alt"   content={ogAlt} />
+  <meta property="og:locale"      content={locale === 'pt' ? 'pt_BR' : 'en_US'} />
+  <meta property="og:site_name"   content="Onswer" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image"       content={ogImageAbsolute} />
+
+  <meta name="theme-color" content="#FAFAF7" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- JSON-LD: Organization (improves AI search visibility — our own dogfood) -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Onswer",
+    "url": "https://onswer.app",
+    "logo": "https://onswer.app/favicon.svg",
+    "description": description,
+    "sameAs": [
+      "https://x.com/onswerapp",
+      "https://github.com/aporce1"
+    ],
+  })} />
+</head>
+<body class="min-h-screen antialiased">
+  <slot />
+
+  <script>
+    // Scroll reveal — adds `.in` to any [data-reveal] element as it enters the
+    // viewport. Pairs with the .reveal-init CSS in global.css for the fade-up.
+    document.addEventListener('DOMContentLoaded', () => {
+      const targets = document.querySelectorAll<HTMLElement>('[data-reveal]');
+      targets.forEach((el) => el.classList.add('reveal-init'));
+      const io = new IntersectionObserver(
+        (entries, obs) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              (e.target as HTMLElement).classList.add('in');
+              obs.unobserve(e.target);
+            }
+          });
+        },
+        { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+      );
+      targets.forEach((el) => io.observe(el));
+    });
+  </script>
+</body>
+</html>

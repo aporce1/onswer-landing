@@ -1,0 +1,51 @@
+---
+import type { Locale } from '@i18n/index';
+import { t } from '@i18n/index';
+import Logo from '@components/Logo.astro';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const d = t(locale).footer;
+---
+
+<footer class="border-t border-[var(--color-line)] bg-[var(--color-surface-2)]">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-14 grid gap-10 md:grid-cols-12">
+    <!-- Brand -->
+    <div class="md:col-span-5">
+      <Logo size={36} />
+      <p class="mt-5 text-sm text-[var(--color-ink-secondary)] max-w-sm leading-relaxed">
+        {d.builtBy}
+      </p>
+    </div>
+
+    <!-- Links -->
+    <div class="md:col-span-3">
+      <h4 class="text-xs uppercase tracking-[0.18em] text-[var(--color-ink-muted)] mb-4">
+        {d.links.product}
+      </h4>
+      <ul class="space-y-2.5 text-sm">
+        <li><a href={`/${locale}#pricing`} class="text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)]">{d.links.pricing}</a></li>
+        <li><a href={`/${locale}#faq`}     class="text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)]">{d.links.faq}</a></li>
+        <li><a href={`/${locale}#hero-form`} class="text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)]">{d.links.audit}</a></li>
+      </ul>
+    </div>
+
+    <div class="md:col-span-4">
+      <h4 class="text-xs uppercase tracking-[0.18em] text-[var(--color-ink-muted)] mb-4">
+        {d.links.company}
+      </h4>
+      <ul class="space-y-2.5 text-sm">
+        <li><a href={`/${locale}/privacy`} class="text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)]">{d.links.privacy}</a></li>
+        <li><a href={`/${locale}/terms`}   class="text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)]">{d.links.terms}</a></li>
+        <li><a href="mailto:hello@onswer.app" class="text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)]">{d.links.contact}</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="border-t border-[var(--color-line)]">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--color-ink-muted)]">
+      <p>© {new Date().getFullYear()} Onswer. {d.rights}.</p>
+      <p class="font-mono">onswer.app</p>
+    </div>
+  </div>
+</footer>

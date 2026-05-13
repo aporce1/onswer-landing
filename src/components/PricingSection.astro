@@ -1,0 +1,87 @@
+---
+import type { Locale } from '@i18n/index';
+import { t } from '@i18n/index';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const d = t(locale).pricing;
+---
+
+<section id="pricing" class="relative py-24 sm:py-32 lg:py-40 border-t border-[var(--color-line)]">
+  <div class="max-w-6xl mx-auto px-6 lg:px-10">
+    <div class="text-center max-w-2xl mx-auto" data-reveal>
+      <span class="pill"><span class="dot"></span>{d.pill}</span>
+      <h2 class="mt-6 font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-balance">
+        {d.title}
+      </h2>
+      {d.subline && (
+        <p class="mt-5 text-base sm:text-lg text-[var(--color-ink-secondary)] leading-relaxed text-balance">{d.subline}</p>
+      )}
+    </div>
+
+    <div class="mt-16 grid md:grid-cols-3 gap-6 items-stretch" data-reveal>
+      {d.plans.map((plan: any) => (
+        <article class={`relative card p-8 flex flex-col ${plan.featured ? 'featured-plan' : ''}`}>
+          {plan.featured && (
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+              <span class="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.2em] font-semibold text-white
+                           bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] px-3 py-1.5 rounded-full
+                           shadow-[0_8px_24px_-8px_rgba(124,58,237,0.6)]">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5L18.2 22 12 17.5 5.8 22l2.4-8.1L2 9.4h7.6z"/></svg>
+                {plan.badge}
+              </span>
+            </div>
+          )}
+
+          <div class="flex items-baseline justify-between">
+            <h3 class="text-xl font-semibold">{plan.name}</h3>
+            <span class="text-xs text-[var(--color-ink-muted)] font-mono">{plan.period}</span>
+          </div>
+
+          <div class="mt-5 flex items-baseline gap-1">
+            <span class={`text-5xl font-bold ${plan.featured ? 'gradient-text' : ''}`}>{plan.price}</span>
+            <span class="text-[var(--color-ink-muted)] text-sm">{plan.period}</span>
+          </div>
+
+          <p class="mt-4 text-sm text-[var(--color-ink-secondary)] leading-relaxed">{plan.body}</p>
+
+          <ul class="mt-7 space-y-3 text-sm flex-1">
+            {plan.features.map((f: string) => (
+              <li class="flex items-start gap-2.5">
+                <svg class={`w-4 h-4 mt-0.5 shrink-0 ${plan.featured ? 'text-[var(--color-accent-glow)]' : 'text-[var(--color-success)]'}`}
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span class="text-[var(--color-ink)]">{f}</span>
+              </li>
+            ))}
+          </ul>
+
+          <a href="#hero-form" class={plan.featured ? 'btn-primary justify-center mt-8' : 'btn-ghost justify-center mt-8'}>
+            {plan.cta}
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </a>
+        </article>
+      ))}
+    </div>
+
+    <p class="mt-10 text-center text-xs text-[var(--color-ink-muted)]">{d.note}</p>
+  </div>
+</section>
+
+<style>
+  .featured-plan {
+    border-color: rgba(124, 58, 237, 0.35);
+    box-shadow:
+      0 25px 60px -25px rgba(79, 70, 229, 0.35),
+      0 0 0 1px rgba(124, 58, 237, 0.08);
+    background: linear-gradient(180deg, #FFFFFF 0%, #FAFAFF 100%);
+  }
+  @media (min-width: 768px) {
+    .featured-plan {
+      transform: scale(1.03);
+    }
+  }
+</style>

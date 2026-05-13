@@ -1,0 +1,619 @@
+---
+/**
+ * Audit result page — fetches GET /v1/audits/{id}?email=... client-side and
+ * renders the full result: score ring, answers list, recommendations, citations.
+ *
+ * Pulls ?id= and ?email= from URL. No JS framework — vanilla DOM + Tailwind.
+ */
+import type { Locale } from '@i18n/index';
+import { t } from '@i18n/index';
+import Logo from '@components/Logo.astro';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const d = t(locale).audit;
+const dNav = t(locale).nav;
+const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://api.onswer.local';
+---
+
+<header class="border-b border-[var(--color-line)] bg-[var(--color-surface)]/70 backdrop-blur sticky top-0 z-30">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-4 flex items-center justify-between">
+    <a href={`/${locale}`} class="flex items-center gap-2.5"><Logo size={28} /></a>
+    <div class="flex items-center gap-4 text-sm">
+      <a href={`/${locale}#pricing`} class="text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)] hidden sm:inline">{dNav.pricing}</a>
+      <button data-share class="text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)] flex items-center gap-1.5">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+        </svg>
+        <span data-share-label>{d.shareCopy}</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-6 lg:px-10 py-12 lg:py-16">
+  <!-- Loading state -->
+  <section data-state="loading" class="text-center py-24">
+    <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white border border-[var(--color-line)] shadow-sm mb-6">
+      <svg class="w-7 h-7 animate-spin text-[var(--color-accent-glow)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="2"  x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+        <line x1="4.93" y1="4.93"  x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
+        <line x1="2"  y1="12" x2="6"  y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+        <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
+      </svg>
+    </div>
+    <h1 class="text-2xl font-bold text-[var(--color-ink)]">{d.loading}</h1>
+    <p class="mt-3 text-[var(--color-ink-secondary)] max-w-md mx-auto">{d.loadingHint}</p>
+  </section>
+
+  <!-- Error state -->
+  <section data-state="error" class="hidden text-center py-24">
+    <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6"
+         style="background: rgba(239, 68, 68, 0.10);">
+      <svg class="w-7 h-7 text-[var(--color-danger)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    <h1 class="text-2xl font-bold text-[var(--color-ink)]">{d.errorTitle}</h1>
+    <p data-error-message class="mt-3 text-[var(--color-ink-secondary)] max-w-md mx-auto">{d.notFound}</p>
+    <a href={`/${locale}`} class="btn-primary mt-8 inline-flex">{d.errorBack}</a>
+  </section>
+
+  <!-- Result state -->
+  <section data-state="ready" class="hidden space-y-12">
+    <!-- Header: domain + status -->
+    <div>
+      <p class="text-sm text-[var(--color-ink-muted)] uppercase tracking-[0.18em]">{d.breadcrumb}</p>
+      <h1 class="mt-2 font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-[var(--color-ink)]">
+        {d.headlinePre} <span data-domain class="gradient-text">—</span>
+      </h1>
+      <div class="mt-3 flex flex-wrap items-center gap-3 text-xs">
+        <span data-status-pill class="pill !py-1 !px-3 !text-[11px]">
+          <span class="dot"></span>
+          <span data-status-label>—</span>
+        </span>
+        <span data-snapshot-line class="hidden items-center gap-2 text-[11px] text-[var(--color-ink-muted)]">
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <span>{d.snapshotPrefix} <span data-snapshot-date class="font-medium text-[var(--color-ink-secondary)]">—</span></span>
+          <a href={`/${locale}#pricing`} class="text-[var(--color-accent-glow)] font-medium hover:underline">{d.snapshotMonitor}</a>
+        </span>
+      </div>
+    </div>
+
+    <!-- Score ring + stats -->
+    <div class="grid lg:grid-cols-[auto,1fr] gap-10 items-center bg-white border border-[var(--color-line)] rounded-2xl p-8 lg:p-10"
+         style="box-shadow: 0 24px 50px -28px rgba(79, 70, 229, 0.18);">
+      <div class="flex flex-col items-center gap-3">
+        <div class="relative">
+          <svg viewBox="0 0 120 120" class="w-44 h-44">
+            <defs>
+              <linearGradient id="resultScoreGrad" gradientUnits="userSpaceOnUse" x1="10" y1="10" x2="110" y2="110">
+                <stop offset="0%"   stop-color="#4F46E5"/>
+                <stop offset="55%"  stop-color="#7C3AED"/>
+                <stop offset="100%" stop-color="#06B6D4"/>
+              </linearGradient>
+            </defs>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="#E5E5EA" stroke-width="10"/>
+            <circle data-score-ring cx="60" cy="60" r="50" fill="none"
+                    stroke="url(#resultScoreGrad)" stroke-width="10" stroke-linecap="round"
+                    pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"
+                    transform="rotate(-90 60 60)"
+                    style="transition: stroke-dashoffset 1.6s cubic-bezier(0.4,0,0.2,1); filter: drop-shadow(0 6px 14px rgba(124,58,237,0.25));"/>
+          </svg>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <span data-score-num class="text-5xl font-bold gradient-text">0</span>
+          </div>
+        </div>
+        <div class="text-center">
+          <p class="text-xs uppercase tracking-[0.16em] text-[var(--color-ink-muted)] font-medium">{d.visibilityLabel}</p>
+          <p class="mt-1 text-xs text-[var(--color-ink-muted)] max-w-[220px]">{d.visibilityHint}</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="stat-box">
+          <p data-stat-answers class="text-3xl font-bold text-[var(--color-ink)]">0</p>
+          <p class="text-xs text-[var(--color-ink-muted)] mt-1">{d.statsAnswers}</p>
+        </div>
+        <div class="stat-box">
+          <p data-stat-mentions class="text-3xl font-bold text-[#10B981]">0</p>
+          <p class="text-xs text-[var(--color-ink-muted)] mt-1">{d.statsMentions}</p>
+        </div>
+        <div class="stat-box">
+          <p data-stat-llms class="text-3xl font-bold text-[var(--color-ink)]">0</p>
+          <p class="text-xs text-[var(--color-ink-muted)] mt-1">{d.statsLLMs}</p>
+        </div>
+        <div class="stat-box">
+          <p data-stat-queries class="text-3xl font-bold text-[var(--color-ink)]">0</p>
+          <p class="text-xs text-[var(--color-ink-muted)] mt-1">{d.statsQueries}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div data-recos-block class="hidden">
+      <div class="flex items-end justify-between gap-4 flex-wrap mb-6">
+        <div>
+          <h2 class="text-2xl font-bold text-[var(--color-ink)]">{d.recosTitle}</h2>
+          <p class="mt-1 text-sm text-[var(--color-ink-secondary)]">{d.recosSubline}</p>
+        </div>
+      </div>
+      <div data-recos-list class="grid sm:grid-cols-2 gap-4"></div>
+    </div>
+
+    <!-- Answers list -->
+    <div>
+      <div class="flex items-end justify-between gap-4 flex-wrap mb-6">
+        <div>
+          <h2 class="text-2xl font-bold text-[var(--color-ink)]">{d.answersTitle}</h2>
+          <p class="mt-1 text-sm text-[var(--color-ink-secondary)]">{d.answersSubline}</p>
+        </div>
+      </div>
+      <div data-answers-list class="space-y-3"></div>
+    </div>
+
+    <!-- Top cited domains -->
+    <div data-citations-block class="hidden">
+      <div class="flex items-end justify-between gap-4 flex-wrap mb-6">
+        <div>
+          <h2 class="text-2xl font-bold text-[var(--color-ink)]">{d.citationsTitle}</h2>
+          <p class="mt-1 text-sm text-[var(--color-ink-secondary)]">{d.citationsSubline}</p>
+        </div>
+      </div>
+      <div data-citations-list class="grid sm:grid-cols-2 gap-2"></div>
+    </div>
+
+    <!-- Upsell -->
+    <div class="relative overflow-hidden rounded-2xl border border-[var(--color-line)] bg-gradient-to-br from-[#EEF2FF] via-white to-[#F5F3FF] p-8 lg:p-10">
+      <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div class="max-w-2xl">
+          <h3 class="text-xl font-bold text-[var(--color-ink)]">{d.upsellTitle}</h3>
+          <p class="mt-2 text-sm text-[var(--color-ink-secondary)] leading-relaxed">{d.upsellBody}</p>
+        </div>
+        <a href={`/${locale}#pricing`} class="btn-primary whitespace-nowrap">{d.upsellCta}</a>
+      </div>
+      <div class="absolute -right-12 -bottom-12 w-56 h-56 rounded-full opacity-30"
+           style="background: radial-gradient(circle, #7C3AED 0%, transparent 70%); filter: blur(20px);"></div>
+    </div>
+  </section>
+</main>
+
+<style is:global>
+  /* Audit result styles — kept global because the recommendation/answer cards
+     are built dynamically via innerHTML, which strips Astro's scoped attribute.
+     All selectors are prefixed (.stat-box, .answer-row, .reco-*) so no leakage. */
+  .stat-box {
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-line);
+    border-radius: 0.85rem;
+    padding: 1rem 1.1rem;
+  }
+  .answer-row {
+    border: 1px solid var(--color-line);
+    background: white;
+    border-radius: 1rem;
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+  .answer-row:hover { border-color: rgba(124, 58, 237, 0.25); }
+  .answer-row[data-mentioned="true"] { border-left: 3px solid #10B981; }
+  .answer-row[data-mentioned="false"] { border-left: 3px solid #E5E5EA; }
+
+  .reco-card {
+    position: relative;
+    background: white;
+    border: 1px solid var(--color-line);
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  }
+  .reco-card:hover { transform: translateY(-2px); box-shadow: 0 16px 36px -18px rgba(79, 70, 229, 0.32); }
+  .reco-card-body { padding: 1.25rem 1.35rem 1.35rem; }
+  /* Coloured top stripe — instant priority scan */
+  .reco-card-bar { height: 4px; width: 100%; }
+  .reco-card-bar-high   { background: linear-gradient(90deg, #EF4444, #F97316); }
+  .reco-card-bar-medium { background: linear-gradient(90deg, #F59E0B, #EAB308); }
+  .reco-card-bar-low    { background: linear-gradient(90deg, #6366F1, #818CF8); }
+  .reco-card-high   { border-color: rgba(239,68,68,0.25);  }
+  .reco-card-medium { border-color: rgba(245,158,11,0.30); }
+  .reco-card-low    { border-color: var(--color-line); }
+
+  /* "Start here" badge — sits inline with the priority pill on the top card */
+  .reco-card-start { box-shadow: 0 18px 38px -22px rgba(239, 68, 68, 0.35); }
+  .reco-start-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: linear-gradient(135deg, #EF4444, #F97316);
+    color: white; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    padding: 5px 10px; border-radius: 9999px;
+    box-shadow: 0 8px 18px -8px rgba(239, 68, 68, 0.55);
+  }
+
+  /* Meta row layout — left side stacks start-badge + priority, right side has effort */
+  .reco-meta {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+  }
+  .reco-meta-left {
+    display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .reco-priority {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em;
+    padding: 3px 10px; border-radius: 9999px; font-weight: 700;
+  }
+  .reco-priority-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+  .reco-priority-high   { background: rgba(239,68,68,0.10);  color: #DC2626; }
+  .reco-priority-high   .reco-priority-dot { background: #EF4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.15); }
+  .reco-priority-medium { background: rgba(245,158,11,0.12); color: #B45309; }
+  .reco-priority-medium .reco-priority-dot { background: #F59E0B; box-shadow: 0 0 0 3px rgba(245,158,11,0.15); }
+  .reco-priority-low    { background: rgba(99,102,241,0.10); color: #4338CA; }
+  .reco-priority-low    .reco-priority-dot { background: #6366F1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+
+  /* Effort indicator — 3 bars + label, neutral colours so it doesn't compete
+     with the priority signal. */
+  .reco-effort {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--color-ink-muted); font-weight: 600;
+  }
+  .reco-effort-bars {
+    display: inline-flex; align-items: flex-end; gap: 3px;
+  }
+  .reco-bar {
+    display: inline-block; width: 4px; border-radius: 1.5px;
+    background: #E5E5EA;
+  }
+  .reco-bar:nth-child(1) { height: 6px; }
+  .reco-bar:nth-child(2) { height: 9px; }
+  .reco-bar:nth-child(3) { height: 12px; }
+  .reco-bar.on { background: #0A0A0F; }
+</style>
+
+<script define:vars={{ apiUrl, locale, dict: t(locale).audit, errors: t(locale).errors }}>
+  // ---------- DOM refs ----------
+  const $ = (sel) => document.querySelector(sel);
+  const stateLoading = $('[data-state="loading"]');
+  const stateError   = $('[data-state="error"]');
+  const stateReady   = $('[data-state="ready"]');
+
+  // ---------- Parse query ----------
+  // Free audit URLs are public: only need ?id. ?email is still accepted for
+  // back-compat with older links from the rate-limited era.
+  const url    = new URL(window.location.href);
+  const id     = url.searchParams.get('id');
+  const email  = url.searchParams.get('email') || '';
+
+  function showError(message) {
+    stateLoading.classList.add('hidden');
+    stateReady.classList.add('hidden');
+    stateError.classList.remove('hidden');
+    const msgEl = stateError.querySelector('[data-error-message]');
+    if (msgEl && message) msgEl.textContent = message;
+  }
+
+  if (!id) {
+    showError(dict.notFound);
+  } else {
+    fetchAudit();
+  }
+
+  async function fetchAudit() {
+    try {
+      const qs = email ? `?email=${encodeURIComponent(email)}` : '';
+      const r = await fetch(`${apiUrl}/v1/audits/${id}${qs}`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+      });
+      if (r.status === 404) return showError(dict.notFound);
+      if (r.status === 403) return showError(dict.forbidden);
+      if (!r.ok)            return showError(errors.server);
+      const json = await r.json();
+      const data = json?.data;
+      if (!data) return showError(errors.server);
+
+      // If still running, poll every 5s
+      if (data.status === 'pending' || data.status === 'running') {
+        setTimeout(fetchAudit, 5000);
+        return;
+      }
+      render(data);
+    } catch {
+      showError(errors.network);
+    }
+  }
+
+  // ---------- Renderer ----------
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, (c) => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  // Render a SAFE subset of markdown coming back from the LLM:
+  //   - escape HTML first (so user content can't inject)
+  //   - then convert **bold** and *italic* back into <strong>/<em>
+  //   - strip leading "# " heading markers (we render answers as flat text)
+  //   - collapse repeated spaces / `* ` bullet prefixes
+  function renderInlineMd(s) {
+    let t = escapeHtml(String(s ?? ''));
+    t = t.replace(/^\s*#{1,6}\s+/gm, '');             // drop heading markers
+    t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    t = t.replace(/(^|[\s(])\*(?!\s)([^*\n]+?)\*(?=[\s).,!?]|$)/g, '$1<em>$2</em>');
+    t = t.replace(/^\s*[-*]\s+/gm, '• ');             // bullet → bullet glyph
+    return t;
+  }
+  function stripMd(s) {
+    return String(s ?? '')
+      .replace(/^\s*#{1,6}\s+/gm, '')
+      .replace(/\*\*(.+?)\*\*/g, '$1')
+      .replace(/(^|[\s(])\*([^*\n]+?)\*(?=[\s).,!?]|$)/g, '$1$2')
+      .replace(/^\s*[-*]\s+/gm, '• ');
+  }
+
+  function render(a) {
+    stateLoading.classList.add('hidden');
+    stateError.classList.add('hidden');
+    stateReady.classList.remove('hidden');
+
+    // Header
+    $('[data-domain]').textContent = a.domain;
+    const statusLabelEl = $('[data-status-label]');
+    const statusMap = {
+      pending:   dict.statusPending,
+      running:   dict.statusRunning,
+      completed: dict.statusComplete,
+      failed:    dict.statusFailed,
+    };
+    statusLabelEl.textContent = statusMap[a.status] || a.status;
+
+    // Snapshot date — emphasises that the audit is a single moment in time.
+    // The upsell ("Monitor weekly →") sits right next to it.
+    if (a.completed_at) {
+      const snapshotLine = $('[data-snapshot-line]');
+      const dateEl = $('[data-snapshot-date]');
+      if (snapshotLine && dateEl) {
+        const d = new Date(a.completed_at.replace(' ', 'T') + 'Z');
+        if (!isNaN(d.getTime())) {
+          dateEl.textContent = d.toLocaleDateString(locale === 'pt' ? 'pt-BR' : 'en-US', {
+            day: 'numeric', month: 'short', year: 'numeric',
+          });
+          snapshotLine.classList.remove('hidden');
+          snapshotLine.classList.add('inline-flex');
+        }
+      }
+    }
+
+    // Score ring + counter
+    const score = Math.max(0, Math.min(100, Number(a.visibility_score) || 0));
+    requestAnimationFrame(() => {
+      const ring = $('[data-score-ring]');
+      if (ring) ring.setAttribute('stroke-dashoffset', String(100 - score));
+    });
+    animateNumber($('[data-score-num]'), score, '', '');
+
+    $('[data-stat-answers]').textContent  = String(a.answers_count ?? 0);
+    $('[data-stat-mentions]').textContent = String(a.mentions_count ?? 0);
+    $('[data-stat-llms]').textContent     = String(a.llms_count ?? 0);
+    $('[data-stat-queries]').textContent  = String(a.queries_count ?? 0);
+
+    // Answers list
+    const answersList = $('[data-answers-list]');
+    answersList.innerHTML = '';
+    (a.answers || []).forEach((ans, idx) => {
+      const llmName = ans.llm?.display_name || ans.llm?.name || ans.llm?.slug || 'LLM';
+      const mentioned = !!ans.brand_mentioned;
+      const competitors = Array.isArray(ans.competitors_seen) ? ans.competitors_seen : [];
+      const responseText = stripMd(ans.response_text || '').replace(/\n{3,}/g, '\n\n');
+      const truncated = responseText.length > 240
+        ? responseText.slice(0, 240).trim() + '…'
+        : responseText;
+
+      const row = document.createElement('div');
+      row.className = 'answer-row p-5';
+      row.setAttribute('data-mentioned', mentioned ? 'true' : 'false');
+      row.innerHTML = `
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+          <div class="flex-1 min-w-0">
+            <p class="text-xs text-[var(--color-ink-muted)] uppercase tracking-[0.14em] font-medium">
+              ${escapeHtml(llmName)} · ${dict.statsAnswers.slice(0,1).toUpperCase()}${dict.statsAnswers.slice(1)} #${idx + 1}
+            </p>
+            <p class="mt-1.5 text-sm font-semibold text-[var(--color-ink)]">${escapeHtml(ans.query_text || '')}</p>
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            ${mentioned
+              ? `<span class="inline-flex items-center gap-1.5 text-xs font-medium text-[#10B981]">
+                   <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                   ${escapeHtml(dict.answersMentioned)}
+                   ${ans.mention_position ? `<span class="ml-1 font-mono text-[10px] text-[var(--color-ink-muted)]">${dict.answersPosition} #${ans.mention_position}</span>` : ''}
+                 </span>`
+              : `<span class="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-ink-muted)]">
+                   <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+                   ${escapeHtml(dict.answersNot)}
+                 </span>`}
+          </div>
+        </div>
+        <div class="mt-3">
+          <p class="text-sm text-[var(--color-ink-secondary)] leading-relaxed answer-text" style="white-space:pre-line">${renderInlineMd(truncated)}</p>
+          ${responseText.length > 240
+            ? `<button type="button" class="mt-2 text-xs font-medium text-[var(--color-accent-glow)] hover:underline" data-expand>
+                 ${escapeHtml(dict.answersExpand)}
+               </button>`
+            : ''}
+        </div>
+        ${competitors.length > 0
+          ? `<div class="mt-3 flex items-center gap-2 flex-wrap">
+               <span class="text-[10px] uppercase tracking-[0.14em] text-[var(--color-ink-muted)] font-medium">${escapeHtml(dict.answersCompetitors)}:</span>
+               ${competitors.slice(0, 6).map(c => `<span class="text-xs font-mono px-2 py-0.5 rounded-md bg-[var(--color-surface-2)] text-[var(--color-ink-secondary)]">${escapeHtml(c)}</span>`).join('')}
+             </div>`
+          : ''}
+      `;
+      // Expand handler
+      const btn = row.querySelector('[data-expand]');
+      if (btn) {
+        let expanded = false;
+        btn.addEventListener('click', () => {
+          const textEl = row.querySelector('.answer-text');
+          expanded = !expanded;
+          textEl.innerHTML = renderInlineMd(expanded ? responseText : truncated);
+          btn.textContent = expanded ? dict.answersCollapse : dict.answersExpand;
+        });
+      }
+      answersList.appendChild(row);
+    });
+
+    // Recommendations — sort by impact (priority desc, effort asc).
+    // Top card is highest-priority + lowest-effort → "Start here".
+    const recos = a.recommendations || [];
+    if (recos.length > 0) {
+      const priorityRank = { high: 3, medium: 2, low: 1 };
+      const effortRank   = { quick: 1, moderate: 2, heavy: 3 };
+      const sorted = [...recos].sort((a, b) => {
+        const pa = priorityRank[a.priority] || 1;
+        const pb = priorityRank[b.priority] || 1;
+        if (pa !== pb) return pb - pa;
+        const ea = effortRank[a.effort] || 2;
+        const eb = effortRank[b.effort] || 2;
+        return ea - eb;
+      });
+
+      const block = $('[data-recos-block]');
+      const list  = $('[data-recos-list]');
+      block.classList.remove('hidden');
+      list.innerHTML = '';
+      sorted.forEach((r, i) => {
+        const priority = r.priority || 'low';
+        const effort   = r.effort   || 'moderate';
+        const effortLabel = effort === 'quick' ? dict.recosEffortQuick
+                          : effort === 'heavy' ? dict.recosEffortHeavy
+                          : dict.recosEffortMed;
+        const priorityLabel = priority === 'high'   ? dict.recosPriorityHigh
+                            : priority === 'medium' ? dict.recosPriorityMedium
+                            : dict.recosPriorityLow;
+        const effortBars  = effort === 'quick' ? 1 : effort === 'heavy' ? 3 : 2;
+        const isStartHere = i === 0 && priority === 'high';
+
+        const card = document.createElement('div');
+        card.className = `reco-card reco-card-${priority}` + (isStartHere ? ' reco-card-start' : '');
+        card.innerHTML = `
+          <div class="reco-card-bar reco-card-bar-${priority}"></div>
+          <div class="reco-card-body">
+            <div class="reco-meta">
+              <div class="reco-meta-left">
+                ${isStartHere ? `
+                  <span class="reco-start-badge">
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    <span>${escapeHtml(dict.recosStartHere || 'Start here')}</span>
+                  </span>` : ''}
+                <span class="reco-priority reco-priority-${priority}">
+                  <span class="reco-priority-dot"></span>
+                  ${escapeHtml(priorityLabel)}
+                </span>
+              </div>
+              <span class="reco-effort" title="${escapeHtml(effortLabel)}">
+                <span class="reco-effort-bars" aria-hidden="true">
+                  <i class="reco-bar ${effortBars >= 1 ? 'on' : ''}"></i>
+                  <i class="reco-bar ${effortBars >= 2 ? 'on' : ''}"></i>
+                  <i class="reco-bar ${effortBars >= 3 ? 'on' : ''}"></i>
+                </span>
+                <span class="reco-effort-label">${escapeHtml(effortLabel)}</span>
+              </span>
+            </div>
+            <h3 class="mt-3 text-base font-semibold text-[var(--color-ink)] leading-snug">${renderInlineMd(stripMd(r.title || ''))}</h3>
+            <p class="mt-1.5 text-sm text-[var(--color-ink-secondary)] leading-relaxed">${renderInlineMd(stripMd(r.description || ''))}</p>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    // Top cited domains
+    const cits = a.top_cited_domains || [];
+    if (cits.length > 0) {
+      const block = $('[data-citations-block]');
+      const list  = $('[data-citations-list]');
+      block.classList.remove('hidden');
+      list.innerHTML = '';
+      cits.forEach((c, i) => {
+        const item = document.createElement('div');
+        item.className = 'flex items-center gap-3 px-4 py-3 rounded-xl bg-white border border-[var(--color-line)]';
+        item.innerHTML = `
+          <span class="font-mono text-xs text-[var(--color-ink-muted)] w-6">#${i + 1}</span>
+          <span class="text-sm font-medium text-[var(--color-ink)] flex-1 truncate">${escapeHtml(c.domain || c.host || '—')}</span>
+          <span class="text-xs text-[var(--color-ink-muted)]">${Number(c.count || c.citations || 0)} ${escapeHtml(dict.citationsCount)}</span>
+        `;
+        list.appendChild(item);
+      });
+    }
+  }
+
+  // ---------- Helpers ----------
+  function animateNumber(el, target, prefix = '', suffix = '') {
+    if (!el) return;
+    const duration = 1400;
+    const start = performance.now();
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = `${prefix}${Math.round(target * eased)}${suffix}`;
+      if (t < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  // ---------- Share button ----------
+  // Try the modern Clipboard API first (only works in secure contexts and on
+  // user gesture). If that fails for any reason — http://, blurred document,
+  // permission denied — fall back to the legacy textarea + execCommand trick.
+  function legacyCopy(text) {
+    return new Promise((resolve, reject) => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, text.length);
+      try {
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        ok ? resolve() : reject(new Error('execCommand returned false'));
+      } catch (e) {
+        document.body.removeChild(ta);
+        reject(e);
+      }
+    });
+  }
+  async function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      try { await navigator.clipboard.writeText(text); return; }
+      catch { /* fall through to legacy below */ }
+    }
+    return legacyCopy(text);
+  }
+
+  const shareBtn = document.querySelector('[data-share]');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      const label = shareBtn.querySelector('[data-share-label]');
+      try {
+        await copyToClipboard(window.location.href);
+        if (label) {
+          const original = label.textContent;
+          label.textContent = dict.shareCopied;
+          setTimeout(() => { label.textContent = original; }, 1800);
+        }
+      } catch (err) {
+        console.warn('[share] copy failed:', err);
+        if (label) {
+          const original = label.textContent;
+          label.textContent = '⚠ ' + original;
+          setTimeout(() => { label.textContent = original; }, 1800);
+        }
+      }
+    });
+  }
+</script>
