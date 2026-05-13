@@ -172,7 +172,8 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://api.onswer.local';
           <h3 class="text-xl font-bold text-[var(--color-ink)]">{d.upsellTitle}</h3>
           <p class="mt-2 text-sm text-[var(--color-ink-secondary)] leading-relaxed">{d.upsellBody}</p>
         </div>
-        <a href={`/${locale}#pricing`} class="btn-primary whitespace-nowrap">{d.upsellCta}</a>
+        <a href={`/${locale}#pricing`} class="btn-primary whitespace-nowrap"
+           onclick="window.onswerTrack && window.onswerTrack('pricing_clicked', { from: 'audit_upsell' })">{d.upsellCta}</a>
       </div>
       <div class="absolute -right-12 -bottom-12 w-56 h-56 rounded-full opacity-30"
            style="background: radial-gradient(circle, #7C3AED 0%, transparent 70%); filter: blur(20px);"></div>
@@ -318,6 +319,17 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://api.onswer.local';
         setTimeout(fetchAudit, 5000);
         return;
       }
+      // Audit reveal — the moment the user sees their score. Useful funnel
+      // signal: started → completed conversion rate, and segmentation by
+      // visibility_score (low scores convert better to paid monitoring).
+      try {
+        window.onswerTrack && window.onswerTrack('audit_completed', {
+          locale,
+          visibility_score: Number(data.visibility_score) || 0,
+          mentions_count:   Number(data.mentions_count)   || 0,
+          domain_id:        data.id,
+        });
+      } catch {}
       render(data);
     } catch {
       showError(errors.network);

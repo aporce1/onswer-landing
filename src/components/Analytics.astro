@@ -1,0 +1,71 @@
+---
+/**
+ * Single source of truth for tracking scripts. Loaded once from BaseLayout.
+ *
+ * Three pixels, in order of priority:
+ *   1) Radar — our first-party analytics (radar.syswp.com.br). Always on in
+ *      production. No third-party cookies, no consent banner required.
+ *   2) GA4 — optional, only fires if PUBLIC_GA4_ID is set.
+ *   3) Reddit Pixel — optional, only fires if PUBLIC_REDDIT_PIXEL_ID is set.
+ *
+ * Inline scripts are emitted via `<Fragment set:html>` so Astro/esbuild
+ * don't try to JS-parse the minified vendor snippets (they choke on the
+ * Reddit pixel bootstrap). Skipped in `dev`.
+ */
+const RADAR_ID  = 'NTp8bxvzp2CS';
+const GA4_ID    = import.meta.env.PUBLIC_GA4_ID         ?? '';
+const REDDIT_ID = import.meta.env.PUBLIC_REDDIT_PIXEL_ID ?? '';
+const isProd    = import.meta.env.PROD;
+
+const ga4IdJson    = JSON.stringify(GA4_ID);
+const redditIdJson = JSON.stringify(REDDIT_ID);
+
+// All inline JS lives inside these template strings. Splice via JSON.stringify
+// for safety. The `<Fragment set:html={...}>` below dumps them verbatim — no
+// parsing, no transformation.
+const radarTags = `
+  <script async src="https://radar.syswp.com.br/p/${RADAR_ID}.js"></script>
+  <noscript><img src="https://radar.syswp.com.br/p/${RADAR_ID}.gif" alt="" width="1" height="1" loading="eager"></noscript>
+`;
+
+const ga4Tags = GA4_ID ? `
+  <script async src="https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(GA4_ID)}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ window.dataLayer.push(arguments); }
+    window.gtag = gtag;
+    gtag('js', new Date());
+    gtag('config', ${ga4IdJson}, { anonymize_ip: true, send_page_view: true });
+  </script>
+` : '';
+
+const redditTags = REDDIT_ID ? `
+  <script>
+    !function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);
+    window.rdt('init', ${redditIdJson});
+    window.rdt('track', 'PageVisit');
+  </script>
+` : '';
+
+const trackerTag = `
+  <script>
+    window.onswerTrack = function(event, params) {
+      params = params || {};
+      try { if (window.gtag) window.gtag('event', event, params); } catch(e) {}
+      try {
+        if (window.rdt) {
+          var p = Object.assign({ customEventName: event }, params);
+          window.rdt('track', 'Custom', p);
+        }
+      } catch(e) {}
+      try { window.dispatchEvent(new CustomEvent('onswer:track', { detail: { event: event, params: params } })); } catch(e) {}
+    };
+  </script>
+`;
+
+const allTags = isProd
+  ? radarTags + ga4Tags + redditTags + trackerTag
+  : '';
+---
+
+<Fragment set:html={allTags} />

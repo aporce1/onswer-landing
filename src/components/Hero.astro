@@ -309,6 +309,9 @@ const apiUrl  = import.meta.env.PUBLIC_API_URL || 'http://api.onswer.local';
       }
 
       setLoading(true);
+      // Conversion event — the moment the user commits to a domain. This is
+      // the most important funnel step before they see results.
+      try { (window as any).onswerTrack?.('audit_started', { locale }); } catch {}
       try {
         const r = await fetch(apiUrl + '/v1/audits/free', {
           method:  'POST',
