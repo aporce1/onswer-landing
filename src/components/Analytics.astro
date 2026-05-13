@@ -39,9 +39,16 @@ const ga4Tags = GA4_ID ? `
   </script>
 ` : '';
 
+// Reddit's official bootstrap appends ?pixel_id=<id> to the pixel.js URL —
+// this lets Reddit's CDN attribute the load to the right account before the
+// JS finishes downloading. Keep it identical to what Reddit Ads shows.
+const redditPixelSrc = REDDIT_ID
+  ? `https://www.redditstatic.com/ads/pixel.js?pixel_id=${encodeURIComponent(REDDIT_ID)}`
+  : '';
+
 const redditTags = REDDIT_ID ? `
   <script>
-    !function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);
+    !function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src=${JSON.stringify(redditPixelSrc)},t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);
     window.rdt('init', ${redditIdJson});
     window.rdt('track', 'PageVisit');
   </script>
