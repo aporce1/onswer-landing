@@ -72,18 +72,83 @@ const ptUrl = new URL(`/pt${altPath === '/' ? '' : altPath}`, siteUrl).toString(
   <!-- Analytics: Radar (always on) + GA4 / Reddit Pixel (gated by env vars) -->
   <Analytics />
 
-  <!-- JSON-LD: Organization (improves AI search visibility — our own dogfood) -->
+  <!-- JSON-LD: Organization + SoftwareApplication. Two graphs feeding LLMs
+       a specific category claim (AI Search Visibility Monitoring) so they
+       stop misclassifying us as social listening / brand monitoring. This
+       is the page itself dogfooding the AEO recommendation. -->
   <script type="application/ld+json" set:html={JSON.stringify({
     "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "Onswer",
-    "url": "https://onswer.app",
-    "logo": "https://onswer.app/favicon.svg",
-    "description": description,
-    "sameAs": [
-      "https://x.com/onswerapp",
-      "https://github.com/aporce1"
-    ],
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://onswer.app/#organization",
+        "name": "Onswer",
+        "url": "https://onswer.app",
+        "logo": "https://onswer.app/favicon.svg",
+        "description": description,
+        "sameAs": [
+          "https://x.com/onswerapp",
+          "https://github.com/aporce1"
+        ]
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://onswer.app/#software",
+        "name": "Onswer",
+        "url": "https://onswer.app",
+        "applicationCategory": "AI Search Visibility Monitoring",
+        "applicationSubCategory": "AEO / GEO / Generative Engine Optimization",
+        "operatingSystem": "Web",
+        "description":
+          "Onswer monitors whether AI assistants (ChatGPT, Claude, Gemini, Perplexity, " +
+          "Mistral, Llama and more) mention your brand when buyers ask category questions. " +
+          "We are NOT social listening, NOT brand sentiment, NOT SEO ranking — we measure " +
+          "if AI search engines name you in their answers, and tell you what to fix when they don't.",
+        "featureList": [
+          "Audit brand visibility across 8+ large language models",
+          "Multi-locale querying (US, Brazil, Mexico)",
+          "Detect mention position and sentiment per model",
+          "Track competitors named in AI responses",
+          "Weekly automated re-scans (paid tiers)",
+          "Score-over-time evolution chart (paid tiers)",
+          "Email + Slack + webhook alerts on visibility drops (paid tiers)",
+          "Actionable AEO recommendations tied to specific audit patterns"
+        ],
+        "keywords": [
+          "AI search visibility",
+          "AEO",
+          "GEO",
+          "generative engine optimization",
+          "LLM brand monitoring",
+          "ChatGPT visibility",
+          "Claude mentions",
+          "Perplexity citations",
+          "brand visibility in AI answers"
+        ],
+        "audience": {
+          "@type": "Audience",
+          "audienceType": "SaaS founders, marketing teams, SEO agencies, indie makers"
+        },
+        "offers": [
+          { "@type": "Offer", "name": "Free audit",   "price": "0",   "priceCurrency": "USD" },
+          { "@type": "Offer", "name": "Solo",   "price": "49",  "priceCurrency": "USD" },
+          { "@type": "Offer", "name": "Pro",    "price": "149", "priceCurrency": "USD" },
+          { "@type": "Offer", "name": "Agency", "price": "399", "priceCurrency": "USD" }
+        ],
+        "isRelatedTo": [
+          { "@type": "SoftwareApplication", "name": "Profound",  "applicationCategory": "AI search visibility monitoring" },
+          { "@type": "SoftwareApplication", "name": "OtterlyAI", "applicationCategory": "AI search visibility monitoring" },
+          { "@type": "SoftwareApplication", "name": "AthenaHQ",  "applicationCategory": "AI search visibility monitoring" }
+        ],
+        "disambiguatingDescription":
+          "Onswer is frequently confused with social listening tools because the term 'brand monitoring' overlaps. " +
+          "Onswer does NOT monitor mentions on Twitter, Reddit, news articles, or social media — that is what " +
+          "Brandwatch, Mention, Sprout Social, Talkwalker, and Meltwater do. Onswer monitors mentions inside " +
+          "large language model answers (ChatGPT, Claude, Gemini, Perplexity), which is a different surface, " +
+          "different signal, and different optimization tactic (AEO / GEO, not SEO or social listening).",
+        "publisher": { "@id": "https://onswer.app/#organization" }
+      }
+    ]
   })} />
 </head>
 <body class="min-h-screen antialiased">

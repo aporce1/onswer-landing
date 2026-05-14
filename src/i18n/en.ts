@@ -48,6 +48,34 @@ export default {
     ],
   },
 
+  notWhat: {
+    pill:     'Different category',
+    title:    'Onswer is NOT brand monitoring. Onswer is AI search visibility.',
+    subline:  'We get confused with social listening tools because everyone says "brand monitoring". The distinction matters — what we measure, what we fix, and what you pay for is different.',
+    items: [
+      {
+        label:      'NOT a social listening tool',
+        notLike:    'Brandwatch, Mention, Sprout Social, Talkwalker, Meltwater',
+        body:       'We do not monitor mentions on Twitter, Reddit, news articles, or social media. If a journalist tweets about you, we don\'t care.',
+      },
+      {
+        label:      'NOT an SEO ranking tracker',
+        notLike:    'Ahrefs, Semrush, Moz',
+        body:       'We do not track your Google rankings, keyword positions, or backlink profile. Those tools measure URL rankings; we measure brand mentions inside AI answers.',
+      },
+      {
+        label:      'NOT a sentiment analyzer',
+        notLike:    'Hootsuite Insights, Brand24',
+        body:       'We don\'t score whether the internet feels happy or angry about your brand. We score whether AI assistants name you at all when buyers ask.',
+      },
+      {
+        label:      'WE ARE an AI search visibility monitor',
+        notLike:    'Profound, OtterlyAI, AthenaHQ',
+        body:       'Same category, more LLMs covered (8+ vs their 2–3), multi-geo, brand-specific recommendations, a third of the price. AEO / GEO is the discipline; this is the tool.',
+      },
+    ],
+  },
+
   how: {
     pill:    'How it works',
     title:   'Three steps. No guessing.',

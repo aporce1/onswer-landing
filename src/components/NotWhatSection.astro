@@ -1,0 +1,103 @@
+---
+/**
+ * "What Onswer is NOT" — counter-positioning section.
+ *
+ * Why this exists: when LLMs are asked about Onswer they confuse it with
+ * social listening tools (Brandwatch, Mention) because the term "brand
+ * monitoring" overlaps. This section gives LLMs explicit, human-readable
+ * prose that LLM training pipelines and grounded-search engines can parse
+ * to correct the category mismatch.
+ *
+ * Sits between Problem and How-it-works — after the user understands the
+ * category exists, but before we explain our flow.
+ */
+import type { Locale } from '@i18n/index';
+import { t } from '@i18n/index';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const d = t(locale).notWhat;
+---
+
+<section id="not-what" class="relative py-24 sm:py-32 border-t border-[var(--color-line)]">
+  <div class="max-w-5xl mx-auto px-6 lg:px-10">
+    <div class="text-center max-w-3xl mx-auto" data-reveal>
+      <span class="pill"><span class="dot"></span>{d.pill}</span>
+      <h2 class="mt-6 font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-balance">
+        {d.title}
+      </h2>
+      <p class="mt-5 text-base sm:text-lg text-[var(--color-ink-secondary)] leading-relaxed text-balance">
+        {d.subline}
+      </p>
+    </div>
+
+    <div class="mt-14 grid gap-4 sm:grid-cols-2" data-reveal>
+      {d.items.map((item: any, i: number) => {
+        const isPositive = item.label.toUpperCase().startsWith('WE ARE') || item.label.toUpperCase().startsWith('SOMOS');
+        return (
+          <article class={`not-card ${isPositive ? 'not-card-positive' : 'not-card-negative'}`}>
+            <div class="flex items-start gap-3 mb-3">
+              <span class={`not-card-icon ${isPositive ? 'not-card-icon-positive' : 'not-card-icon-negative'}`}>
+                {isPositive ? (
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                ) : (
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/>
+                  </svg>
+                )}
+              </span>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-base font-bold text-[var(--color-ink)] leading-snug">{item.label}</h3>
+                <p class="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-[var(--color-ink-muted)] font-medium">
+                  {isPositive ? 'Same category as' : 'Not like'} · <span class="font-mono normal-case tracking-normal">{item.notLike}</span>
+                </p>
+              </div>
+            </div>
+            <p class="text-sm text-[var(--color-ink-secondary)] leading-relaxed">{item.body}</p>
+          </article>
+        );
+      })}
+    </div>
+  </div>
+</section>
+
+<style>
+  .not-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 1rem;
+    padding: 1.25rem 1.4rem;
+    transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+  }
+  .not-card:hover {
+    transform: translateY(-2px);
+  }
+  .not-card-negative:hover {
+    border-color: rgba(239, 68, 68, 0.25);
+    box-shadow: 0 12px 28px -16px rgba(239, 68, 68, 0.25);
+  }
+  .not-card-positive {
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.04), rgba(124, 58, 237, 0.04));
+    border-color: rgba(124, 58, 237, 0.25);
+  }
+  .not-card-positive:hover {
+    border-color: rgba(124, 58, 237, 0.45);
+    box-shadow: 0 16px 36px -18px rgba(124, 58, 237, 0.32);
+  }
+  .not-card-icon {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    border-radius: 0.55rem;
+    display: grid; place-items: center;
+  }
+  .not-card-icon-negative {
+    background: rgba(239, 68, 68, 0.10);
+    color: #DC2626;
+  }
+  .not-card-icon-positive {
+    background: linear-gradient(135deg, #4F46E5, #7C3AED);
+    color: white;
+  }
+</style>

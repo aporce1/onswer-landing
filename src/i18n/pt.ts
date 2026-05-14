@@ -47,6 +47,34 @@ export default {
     ],
   },
 
+  notWhat: {
+    pill:     'Categoria diferente',
+    title:    'Onswer NÃO é monitoramento de marca. Onswer é visibilidade em busca de IA.',
+    subline:  'Nos confundem com ferramentas de social listening porque todo mundo diz "monitoramento de marca". A diferença importa — o que medimos, o que consertamos e o que você paga é diferente.',
+    items: [
+      {
+        label:      'NÃO somos uma ferramenta de social listening',
+        notLike:    'Brandwatch, Mention, Sprout Social, Talkwalker, Meltwater',
+        body:       'Não monitoramos menções no Twitter, Reddit, notícias ou redes sociais. Se um jornalista tuita sobre você, não nos interessa.',
+      },
+      {
+        label:      'NÃO somos um rastreador de SEO',
+        notLike:    'Ahrefs, Semrush, Moz',
+        body:       'Não rastreamos seus rankings no Google, posições de palavras-chave ou backlinks. Eles medem URLs no Google; nós medimos menções de marca dentro de respostas de IA.',
+      },
+      {
+        label:      'NÃO somos um analisador de sentimento',
+        notLike:    'Hootsuite Insights, Brand24',
+        body:       'Não pontuamos se a internet está feliz ou irritada com sua marca. Pontuamos se assistentes de IA mencionam você quando compradores perguntam.',
+      },
+      {
+        label:      'SOMOS um monitor de visibilidade em busca de IA',
+        notLike:    'Profound, OtterlyAI, AthenaHQ',
+        body:       'Mesma categoria, mais LLMs cobertos (8+ vs 2–3 deles), multi-geo, recomendações específicas pela marca, um terço do preço. AEO / GEO é a disciplina; isso é a ferramenta.',
+      },
+    ],
+  },
+
   how: {
     pill:    'Como funciona',
     title:   'Três passos. Sem mistério.',

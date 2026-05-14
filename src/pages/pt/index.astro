@@ -2,6 +2,7 @@
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Hero from '@components/Hero.astro';
 import ProblemSection from '@components/ProblemSection.astro';
+import NotWhatSection from '@components/NotWhatSection.astro';
 import HowItWorks from '@components/HowItWorks.astro';
 import LLMsRow from '@components/LLMsRow.astro';
 import PricingSection from '@components/PricingSection.astro';
@@ -23,6 +24,7 @@ const d = t(locale);
 >
   <Hero locale={locale} />
   <ProblemSection locale={locale} />
+  <NotWhatSection locale={locale} />
   <SectionDivider />
   <HowItWorks locale={locale} />
   <LLMsRow locale={locale} />
