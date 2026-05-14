@@ -1,0 +1,241 @@
+---
+/**
+ * "What you get with Pro" — 3 visual mockups of paid-tier outputs.
+ *
+ * These are static illustrations, not real screenshots — the backend
+ * (cron worker, email digest, diff engine) isn't built yet. The goal is
+ * to make the value of recurring monitoring concrete BEFORE we send
+ * users to the pricing section.
+ *
+ * Sits between LLMsRow and PricingSection so users see WHAT they'd pay
+ * for before they see the price tag.
+ */
+import type { Locale } from '@i18n/index';
+import { t } from '@i18n/index';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const d = t(locale).paidPreview;
+const localeShort = locale === 'pt' ? 'pt-BR' : 'en-US';
+
+// Build a sample 6-point chart series — visibility score over weeks.
+// Each entry: { label, score }. Drawn as an inline SVG line + dots.
+const series = [
+  { label: 'W1', score: 62 },
+  { label: 'W2', score: 68 },
+  { label: 'W3', score: 65 },
+  { label: 'W4', score: 74 },
+  { label: 'W5', score: 79 },
+  { label: 'W6', score: 84 },
+];
+// Project to a 280×100 SVG canvas with 10px padding.
+const W = 320, H = 110, PAD_X = 12, PAD_Y = 14;
+const innerW = W - PAD_X * 2;
+const innerH = H - PAD_Y * 2;
+const minScore = 50, maxScore = 100;
+const points = series.map((p, i) => {
+  const x = PAD_X + (i / (series.length - 1)) * innerW;
+  const y = PAD_Y + (1 - (p.score - minScore) / (maxScore - minScore)) * innerH;
+  return { ...p, x, y };
+});
+const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+const areaD = `${pathD} L ${(PAD_X + innerW).toFixed(1)} ${(PAD_Y + innerH).toFixed(1)} L ${PAD_X.toFixed(1)} ${(PAD_Y + innerH).toFixed(1)} Z`;
+---
+
+<section class="relative py-24 sm:py-32 border-t border-[var(--color-line)] bg-[var(--color-surface-2)]">
+  <div class="max-w-6xl mx-auto px-6 lg:px-10">
+    <div class="text-center max-w-3xl mx-auto" data-reveal>
+      <span class="pill"><span class="dot"></span>{d.pill}</span>
+      <h2 class="mt-6 font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-balance">
+        {d.title}
+      </h2>
+      <p class="mt-5 text-base sm:text-lg text-[var(--color-ink-secondary)] leading-relaxed text-balance">
+        {d.subline}
+      </p>
+    </div>
+
+    <div class="mt-14 grid lg:grid-cols-3 gap-6" data-reveal>
+
+      <!-- Mockup 1: Score-over-time chart -->
+      <article class="paid-mockup">
+        <div class="paid-mockup-frame">
+          <div class="paid-mockup-titlebar">
+            <span class="paid-mockup-traffic"></span>
+            <span class="paid-mockup-traffic" style="background:#FCD34D"></span>
+            <span class="paid-mockup-traffic" style="background:#10B981"></span>
+            <span class="paid-mockup-tab">{d.chart.label}</span>
+          </div>
+          <div class="paid-mockup-body">
+            <div class="flex items-baseline justify-between mb-3">
+              <div>
+                <p class="text-3xl font-bold gradient-text leading-none">84<span class="text-base text-[var(--color-ink-muted)] font-medium">/100</span></p>
+                <p class="text-[10px] uppercase tracking-[0.14em] text-[var(--color-ink-muted)] mt-1.5 font-medium">Visibility</p>
+              </div>
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#10B981]/10 text-[#10B981] text-xs font-semibold">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="18 15 12 9 6 15"/>
+                </svg>
+                +22 in 6w
+              </span>
+            </div>
+            <svg viewBox={`0 0 ${W} ${H}`} class="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="paid-chart-line" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%"  stop-color="#4F46E5"/>
+                  <stop offset="50%" stop-color="#7C3AED"/>
+                  <stop offset="100%" stop-color="#06B6D4"/>
+                </linearGradient>
+                <linearGradient id="paid-chart-area" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%"   stop-color="#7C3AED" stop-opacity="0.25"/>
+                  <stop offset="100%" stop-color="#7C3AED" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <!-- Horizontal grid lines -->
+              {[0, 0.5, 1].map((t) => {
+                const y = PAD_Y + t * innerH;
+                return <line x1={PAD_X} x2={W - PAD_X} y1={y} y2={y} stroke="#E5E5EA" stroke-width="1" stroke-dasharray="2 3"/>;
+              })}
+              <path d={areaD} fill="url(#paid-chart-area)" />
+              <path d={pathD} fill="none" stroke="url(#paid-chart-line)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              {points.map((p) => (
+                <circle cx={p.x} cy={p.y} r="3" fill="white" stroke="#7C3AED" stroke-width="2"/>
+              ))}
+            </svg>
+            <div class="flex justify-between mt-2 text-[10px] font-mono text-[var(--color-ink-subtle)] px-3">
+              {series.map((p) => <span>{p.label}</span>)}
+            </div>
+          </div>
+        </div>
+        <div class="paid-mockup-caption">
+          <p class="font-semibold text-[var(--color-ink)] text-sm">{d.chart.cta}</p>
+          <p class="text-xs text-[var(--color-ink-secondary)] mt-1 leading-relaxed">{d.chart.body}</p>
+        </div>
+      </article>
+
+      <!-- Mockup 2: Weekly email digest -->
+      <article class="paid-mockup">
+        <div class="paid-mockup-frame">
+          <div class="paid-mockup-titlebar">
+            <span class="paid-mockup-traffic"></span>
+            <span class="paid-mockup-traffic" style="background:#FCD34D"></span>
+            <span class="paid-mockup-traffic" style="background:#10B981"></span>
+            <span class="paid-mockup-tab">{d.digest.label}</span>
+          </div>
+          <div class="paid-mockup-body">
+            <p class="text-[10px] uppercase tracking-[0.14em] text-[var(--color-ink-muted)] font-medium">{d.digest.previewTo}</p>
+            <p class="text-sm font-semibold text-[var(--color-ink)] mt-1 leading-snug">{d.digest.previewSubject}</p>
+            <div class="mt-3 space-y-2 text-xs leading-relaxed">
+              <div class="flex items-start gap-2">
+                <span class="paid-digest-bullet bg-[#10B981]"></span>
+                <p class="text-[var(--color-ink)] font-medium">{d.digest.previewLine1}</p>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="paid-digest-bullet bg-[#10B981]"></span>
+                <p class="text-[var(--color-ink-secondary)]">{d.digest.previewLine2}</p>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="paid-digest-bullet bg-[#EF4444]"></span>
+                <p class="text-[var(--color-ink-secondary)]">{d.digest.previewLine3}</p>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="paid-digest-bullet bg-[#F59E0B]"></span>
+                <p class="text-[var(--color-ink-secondary)]">{d.digest.previewLine4}</p>
+              </div>
+            </div>
+            <p class="mt-4 text-xs text-[var(--color-accent-glow)] font-semibold">{d.digest.previewCta}</p>
+          </div>
+        </div>
+        <div class="paid-mockup-caption">
+          <p class="font-semibold text-[var(--color-ink)] text-sm">{d.digest.cta}</p>
+          <p class="text-xs text-[var(--color-ink-secondary)] mt-1 leading-relaxed">{d.digest.body}</p>
+        </div>
+      </article>
+
+      <!-- Mockup 3: Week-over-week diff -->
+      <article class="paid-mockup">
+        <div class="paid-mockup-frame">
+          <div class="paid-mockup-titlebar">
+            <span class="paid-mockup-traffic"></span>
+            <span class="paid-mockup-traffic" style="background:#FCD34D"></span>
+            <span class="paid-mockup-traffic" style="background:#10B981"></span>
+            <span class="paid-mockup-tab">{d.diff.label}</span>
+          </div>
+          <div class="paid-mockup-body space-y-3">
+            <div>
+              <p class="text-[10px] uppercase tracking-[0.14em] text-[#10B981] font-semibold">{d.diff.diffNew}</p>
+              <p class="text-xs text-[var(--color-ink)] mt-1 leading-relaxed pl-2 border-l-2 border-[#10B981]/40">{d.diff.diffEntry1}</p>
+              <p class="text-xs text-[var(--color-ink)] mt-1 leading-relaxed pl-2 border-l-2 border-[#10B981]/40">{d.diff.diffEntry2}</p>
+            </div>
+            <div>
+              <p class="text-[10px] uppercase tracking-[0.14em] text-[#EF4444] font-semibold">{d.diff.diffLost}</p>
+              <p class="text-xs text-[var(--color-ink)] mt-1 leading-relaxed pl-2 border-l-2 border-[#EF4444]/40">{d.diff.diffEntry3}</p>
+            </div>
+            <div>
+              <p class="text-[10px] uppercase tracking-[0.14em] text-[#F59E0B] font-semibold">{d.diff.diffNewComp}</p>
+              <p class="text-xs text-[var(--color-ink)] mt-1 leading-relaxed pl-2 border-l-2 border-[#F59E0B]/40">{d.diff.diffEntry4}</p>
+            </div>
+          </div>
+        </div>
+        <div class="paid-mockup-caption">
+          <p class="font-semibold text-[var(--color-ink)] text-sm">{d.diff.cta}</p>
+          <p class="text-xs text-[var(--color-ink-secondary)] mt-1 leading-relaxed">{d.diff.body}</p>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<style>
+  .paid-mockup {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .paid-mockup-frame {
+    background: white;
+    border-radius: 0.85rem;
+    border: 1px solid var(--color-line);
+    overflow: hidden;
+    box-shadow: 0 16px 36px -22px rgba(79, 70, 229, 0.20);
+    transition: transform .3s ease, box-shadow .3s ease;
+  }
+  .paid-mockup:hover .paid-mockup-frame {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 50px -22px rgba(79, 70, 229, 0.32);
+  }
+  .paid-mockup-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: var(--color-surface-2);
+    border-bottom: 1px solid var(--color-line);
+  }
+  .paid-mockup-traffic {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: #EF4444;
+  }
+  .paid-mockup-tab {
+    margin-left: 10px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--color-ink-muted);
+  }
+  .paid-mockup-body {
+    padding: 1.1rem 1.2rem 1.3rem;
+    min-height: 220px;
+  }
+  .paid-mockup-caption {
+    padding: 0 0.5rem;
+  }
+  .paid-digest-bullet {
+    flex-shrink: 0;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    margin-top: 6px;
+  }
+</style>
