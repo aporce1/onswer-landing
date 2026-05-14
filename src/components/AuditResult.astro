@@ -21,6 +21,14 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://api.onswer.local';
     <a href={`/${locale}`} class="flex items-center gap-2.5"><Logo size={28} /></a>
     <div class="flex items-center gap-4 text-sm">
       <a href={`/${locale}#pricing`} class="text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)] hidden sm:inline">{dNav.pricing}</a>
+      <a data-export-csv href="#" download
+         class="text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)] hidden sm:inline-flex items-center gap-1.5"
+         onclick="window.onswerTrack && window.onswerTrack('audit_csv_exported', {})">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+        </svg>
+        <span>{d.exportCsv}</span>
+      </a>
       <button data-share class="text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)] flex items-center gap-1.5">
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
@@ -209,7 +217,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://api.onswer.local';
       <div data-answers-list class="space-y-3"></div>
     </div>
 
-    <!-- Top cited domains -->
+    <!-- Citation share-of-voice -->
     <div data-citations-block class="hidden">
       <div class="flex items-end justify-between gap-4 flex-wrap mb-6">
         <div>
@@ -217,6 +225,24 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://api.onswer.local';
           <p class="mt-1 text-sm text-[var(--color-ink-secondary)]">{d.citationsSubline}</p>
         </div>
       </div>
+
+      <!-- Share-of-voice headline stat — populated by JS only when citations exist -->
+      <div data-citations-sov class="hidden mb-5 rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] p-5">
+        <div class="flex items-baseline gap-3 flex-wrap">
+          <p class="text-4xl font-bold gradient-text leading-none"><span data-citations-sov-pct>0</span>%</p>
+          <p class="text-sm text-[var(--color-ink-secondary)]">{d.citationsSovYourPct}</p>
+        </div>
+        <div class="mt-3 h-2 bg-[var(--color-surface-2)] rounded-full overflow-hidden">
+          <span data-citations-sov-bar class="block h-full bg-gradient-to-r from-[#4F46E5] via-[#7C3AED] to-[#06B6D4] rounded-full transition-all duration-1000" style="width:0%"></span>
+        </div>
+        <p class="mt-2 text-xs text-[var(--color-ink-muted)] font-mono"><span data-citations-sov-own>0</span> / <span data-citations-sov-total>0</span> {d.citationsCount}</p>
+      </div>
+
+      <!-- Empty state — when user's domain has zero citations -->
+      <div data-citations-empty class="hidden mb-5 rounded-xl border border-dashed border-[var(--color-line-strong)] bg-[var(--color-surface-2)] p-5 text-sm text-[var(--color-ink-secondary)] leading-relaxed">
+        {d.citationsSovNone}
+      </div>
+
       <div data-citations-list class="grid sm:grid-cols-2 gap-2"></div>
     </div>
 
@@ -487,6 +513,12 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://api.onswer.local';
 
     // Header
     $('[data-domain]').textContent = a.domain;
+
+    // Wire the CSV export button to the audit's actual export endpoint.
+    const exportBtn = $('[data-export-csv]');
+    if (exportBtn && a.id) {
+      exportBtn.setAttribute('href', `${apiUrl}/v1/audits/${a.id}/export.csv`);
+    }
     const statusLabelEl = $('[data-status-label]');
     const statusMap = {
       pending:   dict.statusPending,
@@ -812,20 +844,62 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://api.onswer.local';
       });
     }
 
-    // Top cited domains
+    // Citation share-of-voice
     const cits = a.top_cited_domains || [];
     if (cits.length > 0) {
       const block = $('[data-citations-block]');
       const list  = $('[data-citations-list]');
       block.classList.remove('hidden');
       list.innerHTML = '';
+
+      // Match user's domain (apex or any subdomain) against citation rows.
+      const userDomain = String(a.domain || '').toLowerCase().replace(/^www\./, '');
+      const isUserDomain = (d) => {
+        const dd = String(d || '').toLowerCase().replace(/^www\./, '');
+        return dd === userDomain || dd.endsWith('.' + userDomain);
+      };
+
+      // Share-of-voice math
+      const totalCitations = cits.reduce((s, c) => s + Number(c.count || c.citations || 0), 0);
+      const ownCitations   = cits.filter(c => isUserDomain(c.domain || c.host || ''))
+                                 .reduce((s, c) => s + Number(c.count || c.citations || 0), 0);
+      const sovPct = totalCitations > 0 ? Math.round((ownCitations / totalCitations) * 100) : 0;
+
+      const sovBlock = $('[data-citations-sov]');
+      const emptyEl  = $('[data-citations-empty]');
+      if (ownCitations > 0) {
+        sovBlock?.classList.remove('hidden');
+        emptyEl?.classList.add('hidden');
+        const pctEl = $('[data-citations-sov-pct]');
+        const ownEl = $('[data-citations-sov-own]');
+        const totEl = $('[data-citations-sov-total]');
+        const barEl = $('[data-citations-sov-bar]');
+        if (pctEl) pctEl.textContent = String(sovPct);
+        if (ownEl) ownEl.textContent = String(ownCitations);
+        if (totEl) totEl.textContent = String(totalCitations);
+        if (barEl) requestAnimationFrame(() => { barEl.style.width = sovPct + '%'; });
+      } else {
+        sovBlock?.classList.add('hidden');
+        emptyEl?.classList.remove('hidden');
+      }
+
+      // Render the citation list — highlight the user's domain rows.
       cits.forEach((c, i) => {
+        const domain = c.domain || c.host || '—';
+        const count  = Number(c.count || c.citations || 0);
+        const isYou  = isUserDomain(domain);
         const item = document.createElement('div');
-        item.className = 'flex items-center gap-3 px-4 py-3 rounded-xl bg-white border border-[var(--color-line)]';
+        item.className = isYou
+          ? 'flex items-center gap-3 px-4 py-3 rounded-xl bg-[rgba(124,58,237,0.06)] border border-[rgba(124,58,237,0.30)]'
+          : 'flex items-center gap-3 px-4 py-3 rounded-xl bg-white border border-[var(--color-line)]';
+        const youBadge = isYou
+          ? `<span class="text-[10px] uppercase tracking-[0.14em] px-2 py-0.5 rounded-full font-bold text-white bg-gradient-to-r from-[#4F46E5] to-[#7C3AED]">${escapeHtml(dict.citationsYouBadge)}</span>`
+          : '';
         item.innerHTML = `
           <span class="font-mono text-xs text-[var(--color-ink-muted)] w-6">#${i + 1}</span>
-          <span class="text-sm font-medium text-[var(--color-ink)] flex-1 truncate">${escapeHtml(c.domain || c.host || '—')}</span>
-          <span class="text-xs text-[var(--color-ink-muted)]">${Number(c.count || c.citations || 0)} ${escapeHtml(dict.citationsCount)}</span>
+          <span class="text-sm font-medium text-[var(--color-ink)] flex-1 truncate">${escapeHtml(domain)}</span>
+          ${youBadge}
+          <span class="text-xs text-[var(--color-ink-muted)]">${count} ${escapeHtml(dict.citationsCount)}</span>
         `;
         list.appendChild(item);
       });
