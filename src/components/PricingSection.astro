@@ -5,6 +5,12 @@ import { t } from '@i18n/index';
 interface Props { locale: Locale }
 const { locale } = Astro.props;
 const d = t(locale).pricing;
+
+// Early-adopter counter — seeded value. Increment as real conversions
+// happen (later we wire this to /v1/stats/public).
+const EARLY_ADOPTER_LIMIT = 100;
+const EARLY_ADOPTER_TAKEN = 33;
+const EARLY_ADOPTER_LEFT  = EARLY_ADOPTER_LIMIT - EARLY_ADOPTER_TAKEN;
 ---
 
 <section id="pricing" class="relative py-24 sm:py-32 lg:py-40 border-t border-[var(--color-line)]">
@@ -19,9 +25,50 @@ const d = t(locale).pricing;
       )}
     </div>
 
-    <div class="mt-16 grid md:grid-cols-3 gap-6 items-stretch" data-reveal>
+    <!-- Early-adopter scarcity banner — sits above the pricing toggle so
+         visitors see the discount BEFORE comparing plans. -->
+    <div class="early-adopter-banner mt-10 max-w-4xl mx-auto" data-reveal>
+      <div class="flex items-start sm:items-center gap-4 flex-wrap sm:flex-nowrap">
+        <div class="flex-1 min-w-0">
+          <p class="text-sm sm:text-base font-bold text-white">{d.earlyAdopterTitle}</p>
+          <p class="mt-1 text-xs sm:text-sm text-white/85 leading-relaxed">{d.earlyAdopterBody}</p>
+        </div>
+        <div class="early-adopter-counter shrink-0">
+          <p class="text-3xl font-bold text-white leading-none">{EARLY_ADOPTER_LEFT}<span class="text-white/60 text-base font-medium">/{EARLY_ADOPTER_LIMIT}</span></p>
+          <p class="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/80 font-semibold">{d.earlyAdopterSpots}</p>
+        </div>
+      </div>
+      <!-- progress bar -->
+      <div class="mt-4 h-1.5 bg-white/20 rounded-full overflow-hidden">
+        <span class="block h-full bg-white rounded-full" style={`width:${(EARLY_ADOPTER_TAKEN / EARLY_ADOPTER_LIMIT) * 100}%`}></span>
+      </div>
+    </div>
+
+    <!-- Toggle Monthly / Annual -->
+    <div class="mt-12 flex items-center justify-center gap-3" data-reveal>
+      <div class="billing-toggle" role="tablist" aria-label="Billing period">
+        <button type="button"
+                class="billing-toggle-option active"
+                data-billing="monthly"
+                role="tab"
+                aria-selected="true">
+          {d.toggleMonthly}
+        </button>
+        <button type="button"
+                class="billing-toggle-option"
+                data-billing="annual"
+                role="tab"
+                aria-selected="false">
+          {d.toggleAnnual}
+          <span class="billing-toggle-saving">{d.annualSave}</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-12 grid md:grid-cols-3 gap-6 items-stretch" data-reveal>
       {d.plans.map((plan: any) => (
-        <article class={`relative card p-8 flex flex-col ${plan.featured ? 'featured-plan' : ''}`}>
+        <article class={`relative card p-8 flex flex-col ${plan.featured ? 'featured-plan' : ''}`}
+                 data-pricing-card data-price-monthly={plan.priceMonthly}>
           {plan.featured && (
             <div class="absolute -top-3 left-1/2 -translate-x-1/2">
               <span class="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.2em] font-semibold text-white
@@ -35,13 +82,15 @@ const d = t(locale).pricing;
 
           <div class="flex items-baseline justify-between">
             <h3 class="text-xl font-semibold">{plan.name}</h3>
-            <span class="text-xs text-[var(--color-ink-muted)] font-mono">{plan.period}</span>
           </div>
 
           <div class="mt-5 flex items-baseline gap-1">
-            <span class={`text-5xl font-bold ${plan.featured ? 'gradient-text' : ''}`}>{plan.price}</span>
-            <span class="text-[var(--color-ink-muted)] text-sm">{plan.period}</span>
+            <span class={`text-5xl font-bold ${plan.featured ? 'gradient-text' : ''}`}>
+              $<span data-price-display>{plan.priceMonthly}</span>
+            </span>
+            <span class="text-[var(--color-ink-muted)] text-sm" data-price-period>{d.monthHint}</span>
           </div>
+          <p class="mt-1 text-xs text-[var(--color-ink-muted)] h-4" data-price-sub>&nbsp;</p>
 
           <p class="mt-4 text-sm text-[var(--color-ink-secondary)] leading-relaxed">{plan.body}</p>
 
@@ -84,4 +133,103 @@ const d = t(locale).pricing;
       transform: scale(1.03);
     }
   }
+
+  /* Early-adopter scarcity banner — high-contrast gradient, attention-grabbing */
+  .early-adopter-banner {
+    background: linear-gradient(135deg, #DC2626 0%, #EA580C 50%, #F59E0B 100%);
+    border-radius: 1.1rem;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 24px 50px -22px rgba(220, 38, 38, 0.40);
+  }
+
+  /* Billing toggle — pill with two segments */
+  .billing-toggle {
+    display: inline-flex;
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-line);
+    border-radius: 9999px;
+    padding: 4px;
+    gap: 2px;
+  }
+  .billing-toggle-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-ink-muted);
+    background: transparent;
+    cursor: pointer;
+    transition: background-color .2s ease, color .2s ease;
+  }
+  .billing-toggle-option:hover {
+    color: var(--color-ink);
+  }
+  .billing-toggle-option.active {
+    background: white;
+    color: var(--color-ink);
+    box-shadow: 0 4px 12px -4px rgba(15, 23, 42, 0.10);
+  }
+  .billing-toggle-saving {
+    display: inline-block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 2px 7px;
+    border-radius: 9999px;
+    background: rgba(16, 185, 129, 0.15);
+    color: #047857;
+    font-weight: 700;
+  }
 </style>
+
+<script define:vars={{ monthHint: t(locale).pricing.monthHint, annualHint: t(locale).pricing.annualHint, fmtLocale: locale === 'pt' ? 'pt-BR' : 'en-US' }}>
+  // Toggle Monthly / Annual — updates each card's price display.
+  // Annual = 20% off monthly, displayed as the equivalent monthly figure,
+  // with subhint "$X/year, billed annually". Number formatting follows the
+  // page locale (not the browser's) so EN visitors always see "1,428"
+  // and PT visitors always see "1.428".
+  const buttons = document.querySelectorAll('.billing-toggle-option');
+  const cards = document.querySelectorAll('[data-pricing-card]');
+
+  function format(n) {
+    return n.toLocaleString(fmtLocale, { maximumFractionDigits: 0 });
+  }
+
+  function update(billing) {
+    cards.forEach(card => {
+      const monthly = parseInt(card.dataset.priceMonthly || '0', 10);
+      const display = card.querySelector('[data-price-display]');
+      const period  = card.querySelector('[data-price-period]');
+      const sub     = card.querySelector('[data-price-sub]');
+      if (!display || !period || !sub) return;
+
+      if (billing === 'annual') {
+        const monthlyEquiv = Math.round(monthly * 0.8);
+        const annualTotal  = monthlyEquiv * 12;
+        display.textContent = format(monthlyEquiv);
+        period.textContent  = monthHint;
+        sub.textContent     = `$${format(annualTotal)} ${annualHint}`;
+      } else {
+        display.textContent = format(monthly);
+        period.textContent  = monthHint;
+        sub.innerHTML       = '&nbsp;';
+      }
+    });
+  }
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const billing = btn.dataset.billing || 'monthly';
+      buttons.forEach(b => {
+        const isActive = b === btn;
+        b.classList.toggle('active', isActive);
+        b.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+      update(billing);
+      try { window.onswerTrack && window.onswerTrack('pricing_billing_toggled', { billing }); } catch {}
+    });
+  });
+</script>

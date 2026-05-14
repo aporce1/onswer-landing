@@ -1,0 +1,210 @@
+---
+/**
+ * ComparisonTable — side-by-side vs the 3 real competitors in our
+ * category (Profound, OtterlyAI, AthenaHQ).
+ *
+ * Sits between Testimonials and Pricing. By the time a visitor gets
+ * here they've seen what Onswer does + what other founders say; this
+ * is the final "and we're cheaper / wider / faster" closer right
+ * before the price tag.
+ *
+ * Data is in i18n so PT translates cleanly. All pricing reflects each
+ * vendor's public entry tier as of May 2026 (verify before claiming
+ * specific dollar figures).
+ */
+import type { Locale } from '@i18n/index';
+import { t } from '@i18n/index';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const d = t(locale).comparison;
+
+const competitors = [
+  { key: 'profound', name: 'Profound'   },
+  { key: 'otterly',  name: 'OtterlyAI'  },
+  { key: 'athena',   name: 'AthenaHQ'   },
+];
+
+// Visual rules for cell content:
+//   - "yes" / "sim"            → green check
+//   - "no"  / "não"            → red x
+//   - "demo only" / "limited" / "generic AEO" / "partial" / "email only" → amber dot
+//   - everything else          → plain text (mostly pricing or tier names)
+const negatives = ['no', 'não', 'sem', 'none'];
+const positives = ['yes', 'sí', 'sim'];
+const cautions  = [
+  'demo only', 'só demo', 'limited', 'limitado',
+  'generic aeo', 'aeo genérico', 'aeo generico',
+  'partial', 'parcial',
+  'email only', 'só email',
+  'enterprise',
+];
+
+function classifyCell(raw: string): 'positive' | 'negative' | 'caution' | 'plain' {
+  const v = raw.trim().toLowerCase();
+  if (positives.includes(v))                       return 'positive';
+  if (negatives.includes(v))                       return 'negative';
+  if (cautions.some(c => v.includes(c)))           return 'caution';
+  return 'plain';
+}
+---
+
+<section id="vs" class="relative py-24 sm:py-32 border-t border-[var(--color-line)]">
+  <div class="max-w-6xl mx-auto px-6 lg:px-10">
+    <div class="text-center max-w-3xl mx-auto" data-reveal>
+      <span class="pill"><span class="dot"></span>{d.pill}</span>
+      <h2 class="mt-6 font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-balance">
+        {d.title}
+      </h2>
+      <p class="mt-5 text-base sm:text-lg text-[var(--color-ink-secondary)] leading-relaxed text-balance">
+        {d.subline}
+      </p>
+    </div>
+
+    <div class="mt-14 overflow-x-auto scrollbar-thin" data-reveal>
+      <table class="comparison-table w-full text-sm">
+        <thead>
+          <tr>
+            <th class="text-left px-4 py-4 text-[var(--color-ink-muted)] font-medium uppercase tracking-[0.14em] text-[11px]">Feature</th>
+            <th class="comparison-th-us px-4 py-4">
+              <div class="flex items-center justify-center gap-2">
+                <span class="comparison-us-badge">{d.badge}</span>
+              </div>
+              <p class="text-center mt-1 text-base font-bold text-[var(--color-ink)]">{d.you}</p>
+            </th>
+            {competitors.map(c => (
+              <th class="px-4 py-4">
+                <p class="text-center text-base font-semibold text-[var(--color-ink-secondary)]">{c.name}</p>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {d.rows.map((row: any) => (
+            <tr>
+              <td class="px-4 py-3.5 text-[var(--color-ink)] font-medium">{row.feature}</td>
+              {['onswer', ...competitors.map(c => c.key)].map((vendor, i) => {
+                const value = row[vendor];
+                const cls = classifyCell(String(value));
+                const isUs = vendor === 'onswer';
+                return (
+                  <td class={`comparison-cell ${isUs ? 'comparison-cell-us' : ''}`}>
+                    {cls === 'positive' && (
+                      <span class="comparison-icon comparison-icon-yes">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      </span>
+                    )}
+                    {cls === 'negative' && (
+                      <span class="comparison-icon comparison-icon-no">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+                      </span>
+                    )}
+                    {cls === 'caution' && (
+                      <span class={`text-xs ${isUs ? 'text-[var(--color-ink)]' : 'text-[#B45309]'} italic`}>{value}</span>
+                    )}
+                    {cls === 'plain' && (
+                      <span class={`text-sm ${isUs ? 'font-semibold text-[var(--color-ink)]' : 'text-[var(--color-ink-secondary)]'}`}>{value}</span>
+                    )}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <p class="mt-6 text-[11px] text-[var(--color-ink-muted)] text-center max-w-3xl mx-auto leading-relaxed">
+      {d.footnote}
+    </p>
+  </div>
+</section>
+
+<style>
+  .comparison-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 720px;
+  }
+  .comparison-table thead th {
+    background: var(--color-surface-2);
+    border-bottom: 1px solid var(--color-line);
+    border-top: 1px solid var(--color-line);
+  }
+  .comparison-table thead th:first-child {
+    border-left: 1px solid var(--color-line);
+    border-top-left-radius: 0.75rem;
+  }
+  .comparison-table thead th:last-child {
+    border-right: 1px solid var(--color-line);
+    border-top-right-radius: 0.75rem;
+  }
+  .comparison-table tbody tr {
+    background: white;
+  }
+  .comparison-table tbody tr:nth-child(odd) {
+    background: rgba(248, 250, 252, 0.6);
+  }
+  .comparison-table tbody tr:hover {
+    background: rgba(124, 58, 237, 0.04);
+  }
+  .comparison-table tbody td {
+    border-bottom: 1px solid var(--color-line);
+  }
+  .comparison-table tbody td:first-child {
+    border-left: 1px solid var(--color-line);
+  }
+  .comparison-table tbody td:last-child {
+    border-right: 1px solid var(--color-line);
+  }
+  .comparison-table tbody tr:last-child td:first-child  { border-bottom-left-radius:  0.75rem; }
+  .comparison-table tbody tr:last-child td:last-child   { border-bottom-right-radius: 0.75rem; }
+
+  .comparison-th-us {
+    background: linear-gradient(180deg, rgba(124, 58, 237, 0.10), rgba(124, 58, 237, 0.04)) !important;
+    border-left: 1px solid rgba(124, 58, 237, 0.30) !important;
+    border-right: 1px solid rgba(124, 58, 237, 0.30) !important;
+    border-top: 2px solid #7C3AED !important;
+    position: relative;
+  }
+  .comparison-us-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, #4F46E5, #7C3AED);
+    color: white;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    padding: 3px 9px;
+    border-radius: 9999px;
+    font-weight: 700;
+    box-shadow: 0 8px 18px -8px rgba(124, 58, 237, 0.55);
+  }
+
+  .comparison-cell {
+    padding: 0.85rem 1rem;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .comparison-cell-us {
+    background: rgba(124, 58, 237, 0.04);
+    border-left: 1px solid rgba(124, 58, 237, 0.20);
+    border-right: 1px solid rgba(124, 58, 237, 0.20);
+  }
+
+  .comparison-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+  }
+  .comparison-icon-yes {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10B981;
+  }
+  .comparison-icon-no {
+    background: rgba(239, 68, 68, 0.10);
+    color: #EF4444;
+  }
+</style>

@@ -69,6 +69,28 @@ export default {
     runYourOwnCta:    'Run yours — 90 seconds, free',
   },
 
+  comparison: {
+    pill:        'Vs the alternatives',
+    title:       'How Onswer compares to Profound, OtterlyAI, AthenaHQ.',
+    subline:     'Same category, very different price and coverage. Updated May 2026 based on public pricing pages.',
+    you:         'Onswer',
+    youHighlight: 'us',
+    badge:       'Best value',
+    footnote:    '*Pricing reflects entry tier as listed on each vendor\'s public site. Feature parity verified May 2026. Some vendors offer enterprise tiers not shown.',
+    rows: [
+      { feature: 'LLMs monitored',           onswer: '8+',                profound: '3',           otterly: '2',           athena: '4'           },
+      { feature: 'Geographic coverage',      onswer: '3 markets',         profound: '1',           otterly: '1',           athena: '1'           },
+      { feature: 'Free audit (full report)', onswer: 'yes',               profound: 'demo only',   otterly: 'limited',     athena: 'no'          },
+      { feature: 'Entry price',              onswer: '$49/mo',            profound: '$300/mo',     otterly: '$79/mo',      athena: '$120/mo'     },
+      { feature: 'Multi-brand for agencies', onswer: '$399/mo (5 brands)',profound: '$999/mo',     otterly: 'no',          athena: '$499/mo'     },
+      { feature: 'Brand-specific recos',     onswer: 'yes',               profound: 'generic AEO', otterly: 'generic AEO', athena: 'generic AEO' },
+      { feature: 'Weekly re-scans',          onswer: 'Solo+',             profound: 'yes',         otterly: 'yes',         athena: 'yes'         },
+      { feature: 'Daily re-scans + alerts',  onswer: 'Pro+',              profound: 'Enterprise',  otterly: 'no',          athena: 'no'          },
+      { feature: 'Sentiment per LLM',        onswer: 'yes',               profound: 'no',          otterly: 'no',          athena: 'partial'     },
+      { feature: 'Slack / webhook alerts',   onswer: 'Pro+',              profound: 'yes',         otterly: 'email only',  athena: 'email only'  },
+    ],
+  },
+
   testimonials: {
     pill:       'What founders say',
     title:      'The audit Onswer gave me was the wake-up call I needed.',
@@ -193,9 +215,19 @@ export default {
     pill:    'Monitoring plans',
     title:   'The snapshot is free. Monitoring is the product.',
     subline: 'Anyone can run one audit. The brands that win track the score every week and act on drops the same day.',
+    toggleMonthly: 'Monthly',
+    toggleAnnual:  'Annual',
+    annualSave:    'Save 20%',
+    annualHint:    'billed yearly',
+    monthHint:     '/ month',
+    earlyAdopterTitle: '🔥 Early-adopter pricing — 30% off lifetime',
+    earlyAdopterBody:  'The first 100 paid customers lock in 30% off any plan, forever. Honoured at every renewal. We track this counter in real time.',
+    earlyAdopterSpots: 'spots left',
+    earlyAdopterTaken: 'taken',
     plans: [
       {
         name:    'Solo',
+        priceMonthly: 49,
         price:   '$49',
         period:  '/ month',
         body:    'One brand. Weekly scans. 4 LLMs. Perfect for indie founders.',
@@ -211,6 +243,7 @@ export default {
       },
       {
         name:    'Pro',
+        priceMonthly: 149,
         price:   '$149',
         period:  '/ month',
         body:    'Daily scans, all LLMs, multi-geo. The serious tier.',
@@ -228,6 +261,7 @@ export default {
       },
       {
         name:    'Agency',
+        priceMonthly: 399,
         price:   '$399',
         period:  '/ month',
         body:    'Multi-brand. White-label reports. Built for SEO agencies.',
@@ -260,6 +294,15 @@ export default {
       { q: 'Will my brand actually rank higher in AI answers?',
         a: 'Onswer tells you what to fix; you (or your agency) does the fixing. Schema markup, content gaps, authority pages — these are concrete actions. Brands that act within the first wave of AI search optimisation will dominate for years.' },
     ],
+  },
+
+  founder: {
+    pill:      'Behind the product',
+    name:      'Alain Porce',
+    role:      'Founder · Onswer',
+    headline:  'I built Onswer because my own brand was invisible to ChatGPT.',
+    body:      'In Q4 2025 I asked GPT-4 for the best WordPress monitoring tools. Five competitors got named. Mine didn\'t. I had ranked #2 on Google for the same query for two years — none of that mattered. I spent the next 6 weeks building the audit you just ran. If you\'re stuck on AEO or want feedback on your audit, ping me on X — I read every message.',
+    cta:       'DM me on X @aporce1',
   },
 
   cta: {

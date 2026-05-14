@@ -1,0 +1,91 @@
+---
+/**
+ * FounderNote — small "who built this" trust lever.
+ *
+ * For indie SaaS, the founder's face is itself a credibility signal.
+ * Sits between Pricing and FAQ so the user has already considered the
+ * money question and now sees the human asking for it.
+ *
+ * Visual: gradient avatar with initials (same approach as Testimonials,
+ * no stolen stock photos) + signed founder quote + a single CTA to DM
+ * on X. Keep it short — this is a sentiment beat, not a section.
+ */
+import type { Locale } from '@i18n/index';
+import { t } from '@i18n/index';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const d = t(locale).founder;
+---
+
+<section class="relative py-16 sm:py-20 border-t border-[var(--color-line)]">
+  <div class="max-w-4xl mx-auto px-6 lg:px-10">
+    <div class="founder-card" data-reveal>
+      <div class="flex items-start gap-5 sm:gap-7 flex-col sm:flex-row">
+        <!-- Avatar with initials. Replace with a real photo when we have one
+             (see /public/founder.jpg + swap the markup). -->
+        <div class="founder-avatar" aria-hidden="true">AP</div>
+
+        <div class="flex-1 min-w-0">
+          <span class="pill !text-[10px] !py-1 !px-3"><span class="dot"></span>{d.pill}</span>
+          <h3 class="mt-4 text-xl sm:text-2xl font-bold tracking-tight text-[var(--color-ink)] leading-snug">
+            "{d.headline}"
+          </h3>
+          <p class="mt-3 text-sm sm:text-base text-[var(--color-ink-secondary)] leading-relaxed">
+            {d.body}
+          </p>
+          <div class="mt-5 flex items-center gap-4 flex-wrap">
+            <div>
+              <p class="text-sm font-semibold text-[var(--color-ink)]">— {d.name}</p>
+              <p class="text-xs text-[var(--color-ink-muted)]">{d.role}</p>
+            </div>
+            <a href="https://x.com/onswerapp" target="_blank" rel="noopener noreferrer"
+               onclick="window.onswerTrack && window.onswerTrack('founder_x_clicked', { from: 'founder_note' })"
+               class="founder-x-cta">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              {d.cta}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .founder-card {
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.04), rgba(124, 58, 237, 0.04));
+    border: 1px solid rgba(124, 58, 237, 0.18);
+    border-radius: 1.2rem;
+    padding: 2rem 2rem;
+    box-shadow: 0 24px 50px -28px rgba(79, 70, 229, 0.20);
+  }
+  .founder-avatar {
+    flex-shrink: 0;
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    background: linear-gradient(135deg, #4F46E5, #7C3AED, #06B6D4);
+    color: white;
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    box-shadow: 0 12px 28px -10px rgba(124, 58, 237, 0.45);
+  }
+  .founder-x-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    background: var(--color-ink);
+    color: white;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .founder-x-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px -8px rgba(10, 10, 15, 0.40);
+  }
+</style>
