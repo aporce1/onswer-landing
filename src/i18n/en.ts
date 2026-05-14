@@ -364,6 +364,13 @@ export default {
     citationsSovYourPct: 'of all citations are yours',
     citationsSovNone: 'No citations on your domain yet — every paid tier surfaces specific pages to publish for citation wins.',
     citationsYouBadge: 'you',
+
+    competitorsTitle:    'Auto-detected competitors',
+    competitorsSubline:  'Based on your homepage, we identified these brands a buyer would also evaluate. Free tier tracks whether they appear in the same queries; Solo+ lets you override the list and adds weekly competitor monitoring with diff alerts.',
+    competitorsHint:     'Override on Solo+ →',
+    competitorsAppeared: 'mentioned in audit',
+    competitorsTimes:    'time(s)',
+    competitorsNone:     'No competitors auto-detected — usually means we couldn\'t analyse the homepage. Run the audit again or set them manually on Solo+.',
     upsellTitle:      'This is a one-time snapshot.',
     upsellBody:       'AI search shifts every week — models retrain, competitors publish, you slide or climb. Solo re-scans weekly and emails you the diff. Pro alerts you the same day you lose ground.',
     upsellCta:        'See monitoring plans',

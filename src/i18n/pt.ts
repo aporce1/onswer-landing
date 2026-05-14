@@ -363,6 +363,13 @@ export default {
     citationsSovYourPct: 'do total de citações é seu',
     citationsSovNone: 'Sem citações no seu domínio ainda — todos os tiers pagos sugerem páginas específicas para ganhar citações.',
     citationsYouBadge: 'você',
+
+    competitorsTitle:    'Concorrentes auto-detectados',
+    competitorsSubline:  'Baseado na sua homepage, identificamos essas marcas que um comprador também avaliaria. O tier grátis rastreia se elas aparecem nas mesmas queries; Solo+ permite sobrescrever a lista e adiciona monitoramento semanal de concorrentes com alertas de diff.',
+    competitorsHint:     'Sobrescrever no Solo+ →',
+    competitorsAppeared: 'mencionado no audit',
+    competitorsTimes:    'vez(es)',
+    competitorsNone:     'Nenhum concorrente auto-detectado — geralmente significa que não conseguimos analisar a homepage. Rode o audit novamente ou configure manualmente no Solo+.',
     upsellTitle:      'Esse é um snapshot único.',
     upsellBody:       'A busca em IA muda toda semana — modelos são re-treinados, concorrentes publicam, você sobe ou desce. Solo re-escaneia semanal e te avisa por email. Pro te alerta no mesmo dia que você perde terreno.',
     upsellCta:        'Ver planos de monitoramento',

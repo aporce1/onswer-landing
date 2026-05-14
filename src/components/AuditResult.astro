@@ -206,6 +206,23 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://api.onswer.local';
       <div data-recos-list class="grid sm:grid-cols-2 gap-4"></div>
     </div>
 
+    <!-- Auto-detected competitors — LLM-suggested from homepage + cross-checked
+         against answer text for each. Solo+ upgrade path: override the list +
+         continuous diff alerts when competitors gain/lose mentions. -->
+    <div data-competitors-block class="hidden">
+      <div class="flex items-end justify-between gap-4 flex-wrap mb-6">
+        <div class="flex-1 min-w-0">
+          <h2 class="text-2xl font-bold text-[var(--color-ink)]">{d.competitorsTitle}</h2>
+          <p class="mt-1 text-sm text-[var(--color-ink-secondary)] leading-relaxed">{d.competitorsSubline}</p>
+        </div>
+        <a href={`/${locale}#pricing`} class="text-xs text-[var(--color-accent-glow)] font-semibold hover:underline whitespace-nowrap"
+           onclick="window.onswerTrack && window.onswerTrack('pricing_clicked', { from: 'competitors_section' })">
+          {d.competitorsHint}
+        </a>
+      </div>
+      <div data-competitors-list class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+    </div>
+
     <!-- Answers list -->
     <div>
       <div class="flex items-end justify-between gap-4 flex-wrap mb-6">
@@ -312,6 +329,38 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://api.onswer.local';
     padding: 3px 9px; border-radius: 9999px; font-weight: 600;
   }
   .llm-sentiment-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+
+  /* Auto-detected competitor cards */
+  .competitor-card {
+    background: white;
+    border: 1px solid var(--color-line);
+    border-radius: 0.85rem;
+    padding: 1rem 1.1rem;
+    transition: transform .2s ease, border-color .2s ease;
+  }
+  .competitor-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(245, 158, 11, 0.35);
+  }
+  .competitor-count-badge {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    padding: 3px 9px;
+    border-radius: 9999px;
+    font-weight: 700;
+  }
+  .competitor-count-yes {
+    background: rgba(245, 158, 11, 0.15);
+    color: #B45309;
+  }
+  .competitor-count-no {
+    background: var(--color-surface-2);
+    color: var(--color-ink-muted);
+  }
 
   /* Geographic coverage cards */
   .geo-card {
@@ -839,6 +888,50 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://api.onswer.local';
             <h3 class="mt-3 text-base font-semibold text-[var(--color-ink)] leading-snug">${renderInlineMd(stripMd(r.title || ''))}</h3>
             <p class="mt-1.5 text-sm text-[var(--color-ink-secondary)] leading-relaxed">${renderInlineMd(stripMd(r.description || ''))}</p>
           </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    // Auto-detected competitors — LLM-suggested + counted in answer text
+    const competitors = Array.isArray(a.suggested_competitors) ? a.suggested_competitors : [];
+    if (competitors.length > 0) {
+      const block = $('[data-competitors-block]');
+      const list  = $('[data-competitors-list]');
+      block.classList.remove('hidden');
+      list.innerHTML = '';
+
+      // Count each competitor's appearances across all answers.competitors_seen
+      const seenCounts = {};
+      (a.answers || []).forEach(ans => {
+        const seen = Array.isArray(ans.competitors_seen) ? ans.competitors_seen : [];
+        seen.forEach(c => {
+          const k = String(c).trim().toLowerCase();
+          if (k) seenCounts[k] = (seenCounts[k] || 0) + 1;
+        });
+      });
+
+      competitors.forEach(comp => {
+        const name = String(comp.name || '').trim();
+        if (!name) return;
+        const count = seenCounts[name.toLowerCase()] || 0;
+        const card = document.createElement('div');
+        card.className = 'competitor-card';
+        const domainBadge = comp.domain
+          ? `<span class="text-[10px] text-[var(--color-ink-muted)] font-mono">${escapeHtml(comp.domain)}</span>`
+          : '';
+        const countBadge = count > 0
+          ? `<span class="competitor-count-badge competitor-count-yes">${count} ${escapeHtml(dict.competitorsTimes)}</span>`
+          : `<span class="competitor-count-badge competitor-count-no">0 ${escapeHtml(dict.competitorsTimes)}</span>`;
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-[var(--color-ink)] truncate">${escapeHtml(name)}</p>
+              ${domainBadge}
+            </div>
+            ${countBadge}
+          </div>
+          <p class="text-[11px] text-[var(--color-ink-muted)] leading-snug">${escapeHtml(dict.competitorsAppeared)}</p>
         `;
         list.appendChild(card);
       });
