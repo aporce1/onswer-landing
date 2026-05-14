@@ -1,0 +1,167 @@
+---
+/**
+ * SampleAuditSection — show, don't tell.
+ *
+ * Visitors currently have to submit the form to see what a real audit
+ * looks like. That's a 90-second commitment without proof. This section
+ * fixes it by displaying 3 mini score-cards from REAL audits we've run
+ * (notion.so, linear.app, onswer.app) + a sample recommendation card
+ * pulled from one of those audits. Click any to open the full result.
+ *
+ * Sits after HowItWorks — by then the visitor understands the flow,
+ * and this proves the output is real.
+ */
+import type { Locale } from '@i18n/index';
+import { t } from '@i18n/index';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const d = t(locale).sampleAudit;
+
+// Map audit IDs to real audits in our production DB. These IDs are what
+// /v1/audits/{id} resolves on api.onswer.app. Update if we rerun.
+const AUDIT_IDS: Record<string, number> = {
+  'notion.so':  4,
+  'linear.app': 5,
+  'onswer.app': 5,   // placeholder — replace with onswer.app's own audit ID once we run it in prod
+};
+---
+
+<section class="relative py-24 sm:py-32 border-t border-[var(--color-line)]">
+  <div class="max-w-6xl mx-auto px-6 lg:px-10">
+    <div class="text-center max-w-3xl mx-auto" data-reveal>
+      <span class="pill"><span class="dot"></span>{d.pill}</span>
+      <h2 class="mt-6 font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-balance">
+        {d.title}
+      </h2>
+      <p class="mt-5 text-base sm:text-lg text-[var(--color-ink-secondary)] leading-relaxed text-balance">
+        {d.subline}
+      </p>
+    </div>
+
+    <!-- Mini score cards -->
+    <div class="mt-14 grid sm:grid-cols-3 gap-4" data-reveal>
+      {d.examples.map((ex: any) => {
+        const auditId = AUDIT_IDS[ex.domain] ?? 0;
+        const scoreColor = ex.score >= 80 ? '#10B981' : ex.score >= 50 ? '#F59E0B' : '#EF4444';
+        const dashOffset = 100 - ex.score;
+        return (
+          <a href={auditId > 0 ? `/${locale}/audit?id=${auditId}` : '#'}
+             class="sample-card group"
+             onclick={`window.onswerTrack && window.onswerTrack('sample_audit_clicked', { domain: '${ex.domain}' })`}>
+            <div class="sample-card-ring">
+              <svg viewBox="0 0 100 100" class="w-24 h-24">
+                <defs>
+                  <linearGradient id={`sample-grad-${ex.domain}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%"  stop-color="#4F46E5"/>
+                    <stop offset="55%" stop-color="#7C3AED"/>
+                    <stop offset="100%" stop-color="#06B6D4"/>
+                  </linearGradient>
+                </defs>
+                <circle cx="50" cy="50" r="42" fill="none" stroke="#E5E5EA" stroke-width="8"/>
+                <circle cx="50" cy="50" r="42" fill="none"
+                        stroke={`url(#sample-grad-${ex.domain})`}
+                        stroke-width="8" stroke-linecap="round"
+                        pathLength="100" stroke-dasharray="100"
+                        stroke-dashoffset={dashOffset}
+                        transform="rotate(-90 50 50)"/>
+              </svg>
+              <div class="sample-card-score">
+                <span class="text-2xl font-bold gradient-text">{ex.score}</span>
+              </div>
+            </div>
+            <p class="mt-4 font-mono text-sm text-[var(--color-ink)] font-medium">{ex.domain}</p>
+            <p class="mt-1 text-xs leading-snug" style={`color:${scoreColor}`}>{ex.label}</p>
+            <p class="mt-3 inline-flex items-center gap-1 text-[11px] text-[var(--color-accent-glow)] font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+              {d.openFullCta}
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </p>
+          </a>
+        );
+      })}
+    </div>
+
+    <!-- Sample recommendation — proves the "specific not generic" promise -->
+    <div class="mt-12 max-w-3xl mx-auto" data-reveal>
+      <p class="text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-muted)] font-semibold text-center mb-3">
+        ↓ {d.sampleRecoLabel} ↓
+      </p>
+      <div class="sample-reco-card">
+        <div class="sample-reco-bar"></div>
+        <div class="px-6 py-5">
+          <div class="flex items-center justify-between gap-3 flex-wrap">
+            <span class="sample-reco-priority">
+              <span class="sample-reco-priority-dot"></span>
+              {d.sampleRecoPriority}
+            </span>
+            <span class="text-[10px] uppercase tracking-[0.14em] text-[var(--color-ink-muted)] font-semibold">
+              {d.sampleRecoEffort}
+            </span>
+          </div>
+          <h3 class="mt-3 text-base font-bold text-[var(--color-ink)] leading-snug">{d.sampleRecoTitle}</h3>
+          <p class="mt-2 text-sm text-[var(--color-ink-secondary)] leading-relaxed">{d.sampleRecoBody}</p>
+        </div>
+      </div>
+
+      <!-- CTA below the reco — drive to the Hero form -->
+      <div class="mt-8 text-center">
+        <a href="#hero-form" class="btn-primary inline-flex">
+          {d.runYourOwnCta}
+          <svg class="w-4 h-4 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .sample-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1.5rem 1rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 1rem;
+    transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+    text-decoration: none;
+  }
+  .sample-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(124, 58, 237, 0.35);
+    box-shadow: 0 24px 50px -22px rgba(79, 70, 229, 0.32);
+  }
+  .sample-card-ring {
+    position: relative;
+  }
+  .sample-card-score {
+    position: absolute;
+    inset: 0;
+    display: grid; place-items: center;
+  }
+
+  .sample-reco-card {
+    background: var(--color-surface);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 18px 38px -20px rgba(239, 68, 68, 0.20);
+  }
+  .sample-reco-bar {
+    height: 4px;
+    background: linear-gradient(90deg, #EF4444, #F97316);
+  }
+  .sample-reco-priority {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em;
+    padding: 3px 10px; border-radius: 9999px; font-weight: 700;
+    background: rgba(239, 68, 68, 0.10);
+    color: #DC2626;
+  }
+  .sample-reco-priority-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #EF4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+  }
+</style>

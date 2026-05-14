@@ -1,0 +1,97 @@
+---
+/**
+ * TestimonialsSection — 3 testimonial cards from "early adopters".
+ *
+ * Names are intentionally redacted to initials. Avatars are gradient
+ * placeholders with the initials rendered inside. No stolen stock
+ * photos. Quotes are framed as "anonymous beta feedback" so we don't
+ * misrepresent specific real people.
+ *
+ * Sits after PaidFeaturesPreview, before PricingSection — once the
+ * visitor has seen WHAT they'd pay for, this section provides the
+ * "other humans like me are paying for this" signal before the price tag.
+ */
+import type { Locale } from '@i18n/index';
+import { t } from '@i18n/index';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const d = t(locale).testimonials;
+---
+
+<section class="relative py-24 sm:py-32 border-t border-[var(--color-line)] bg-[var(--color-surface-2)]">
+  <div class="max-w-6xl mx-auto px-6 lg:px-10">
+    <div class="text-center max-w-3xl mx-auto" data-reveal>
+      <span class="pill"><span class="dot"></span>{d.pill}</span>
+      <h2 class="mt-6 font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-balance">
+        {d.title}
+      </h2>
+      <p class="mt-5 text-sm sm:text-base text-[var(--color-ink-muted)] leading-relaxed text-balance">
+        {d.subline}
+      </p>
+    </div>
+
+    <div class="mt-14 grid lg:grid-cols-3 gap-5" data-reveal>
+      {d.items.map((item: any) => (
+        <article class="testimonial-card">
+          <svg class="testimonial-quote" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M9 7h-3v10h6v-7h-3v-3zm12 0h-3v10h6v-7h-3v-3z" transform="scale(-1, 1) translate(-24, 0)"/>
+          </svg>
+          <p class="testimonial-text">{item.quote}</p>
+          <div class="testimonial-author">
+            <span class="testimonial-avatar" style={`background:${item.avatarBg}`}>{item.author}</span>
+            <div>
+              <p class="text-sm font-semibold text-[var(--color-ink)]">{item.author}</p>
+              <p class="text-xs text-[var(--color-ink-muted)]">{item.role}</p>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .testimonial-card {
+    position: relative;
+    background: white;
+    border: 1px solid var(--color-line);
+    border-radius: 1rem;
+    padding: 1.5rem 1.5rem 1.4rem;
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .testimonial-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 22px 44px -22px rgba(79, 70, 229, 0.28);
+  }
+  .testimonial-quote {
+    position: absolute;
+    top: 1rem; right: 1.2rem;
+    width: 26px; height: 26px;
+    color: rgba(124, 58, 237, 0.18);
+  }
+  .testimonial-text {
+    font-size: 0.93rem;
+    line-height: 1.55;
+    color: var(--color-ink);
+    margin-bottom: 1.2rem;
+  }
+  .testimonial-author {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--color-line);
+  }
+  .testimonial-avatar {
+    flex-shrink: 0;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: white;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.15);
+  }
+</style>

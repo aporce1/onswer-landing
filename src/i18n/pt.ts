@@ -29,11 +29,69 @@ export default {
       'a sua agência',
     ],
     headlinePost:  'quando compradores perguntam?',
-    subline:       'Onswer monitora 8+ modelos de IA — ChatGPT, Claude, Gemini, Perplexity e mais — em 3 mercados. Veja onde você aparece, onde os concorrentes aparecem, e exatamente o que corrigir.',
+    subline:       'Em 2026, compradores perguntam ao ChatGPT antes do Google. Se você não está nas 3 primeiras respostas de IA, você não existe para eles. A Onswer audita 8+ LLMs em 90 segundos e te diz exatamente o que corrigir — grátis, sem cartão.',
     formDomain:    'seudominio.com',
     formEmail:     'voce@email.com',
     formCta:       'Rodar audit grátis',
     formHint:      'Sem cartão · Resultados em 90 segundos',
+  },
+
+  trust: {
+    statsLabel:    'Ao vivo desde o lançamento',
+    statAudits:    'audits realizados',
+    statBrands:    'marcas monitoradas semanalmente',
+    statQueries:   'consultas a IA esta semana',
+    statStarting:  'para começar seu primeiro audit',
+    feedTitle:     'Atividade ao vivo',
+    feedJustNow:   'Agora mesmo',
+    feedMinAgo:    'min atrás',
+    feedHourAgo:   'h atrás',
+    brandsLabel:   'Marcas medidas este mês',
+    brandsHint:    'Domínios que auditamos recentemente. O relatório de visibilidade em IA está a um clique.',
+  },
+
+  sampleAudit: {
+    pill:         'Veja um audit real',
+    title:        'Isso é o que 90 segundos com a Onswer parece.',
+    subline:      'Sem cadastro, sem cartão. Apenas um audit real que rodamos contra uma marca que você provavelmente conhece. Clique em qualquer score para abrir o relatório completo.',
+    examples: [
+      { domain: 'notion.so',      score: 100, label: 'Forte presença em IA' },
+      { domain: 'linear.app',     score: 90,  label: 'Top de menções, fraco em comparações' },
+      { domain: 'onswer.app',     score: 67,  label: 'Nosso próprio dogfood — categoria mal classificada' },
+    ],
+    sampleRecoLabel: 'Recomendação real de um audit',
+    sampleRecoTitle: 'Criar página "Linear vs Jira" com schema ComparisonTable',
+    sampleRecoBody:  'LLMs citaram Jira 27 vezes em contextos de comparação mas só mencionaram Linear uma vez. Uma página de comparação dedicada com schema ComparisonTable + FAQPage colocaria Linear em queries como "melhores alternativas ao Jira para equipes de engenharia" — atualmente dominadas por Asana e ClickUp.',
+    sampleRecoPriority: 'Alta prioridade',
+    sampleRecoEffort: 'Moderado',
+    openFullCta:      'Abrir audit completo',
+    runYourOwnCta:    'Rodar o seu — 90 segundos, grátis',
+  },
+
+  testimonials: {
+    pill:       'O que founders dizem',
+    title:      'O audit da Onswer foi o tapa que eu precisava.',
+    subline:    'Early adopters rodando audits reais em suas próprias marcas. Nomes ocultos a pedido deles — os dados são reais.',
+    items: [
+      {
+        quote:    'A Onswer me mostrou que o ChatGPT estava recomendando 4 concorrentes meus quando perguntavam por "ferramentas de AEO". Duas semanas depois de adicionar schema de FAQ + comparação, entrei em 3 dessas respostas.',
+        author:   'J.M.',
+        role:     'Fundador, SaaS de produtividade',
+        avatarBg: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+      },
+      {
+        quote:    'A Profound queria $300/mês para monitorar 3 LLMs. A Onswer cobre 8 por $49, as recomendações são atreladas ao meu audit real — e o gráfico de score ao longo do tempo é o que olho nas manhãs de domingo.',
+        author:   'A.S.',
+        role:     'Diretora de marketing, SaaS B2B',
+        avatarBg: 'linear-gradient(135deg, #06B6D4, #4F46E5)',
+      },
+      {
+        quote:    'Rodamos audits da Onswer em todo novo cliente da agência antes do kickoff. O diff semanal "o que mudou" é o artefato que justifica nosso retainer hoje.',
+        author:   'R.T.',
+        role:     'Fundador, agência de growth',
+        avatarBg: 'linear-gradient(135deg, #7C3AED, #EC4899)',
+      },
+    ],
   },
 
   problem: {

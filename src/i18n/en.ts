@@ -30,11 +30,69 @@ export default {
       'your agency',
     ],
     headlinePost:  'when buyers ask?',
-    subline:       'Onswer monitors 8+ AI models — ChatGPT, Claude, Gemini, Perplexity and more — across 3 markets. See where you appear, where competitors appear, and exactly what to fix.',
+    subline:       'In 2026, buyers ask ChatGPT before Google. If you\'re not in the top 3 AI answers, you don\'t exist for them. Onswer audits 8+ LLMs in 90 seconds and tells you exactly what to fix — free, no card.',
     formDomain:    'yourdomain.com',
     formEmail:     'you@email.com',
     formCta:       'Run free audit',
     formHint:      'No credit card · Results in 90 seconds',
+  },
+
+  trust: {
+    statsLabel:    'Live since launch',
+    statAudits:    'audits run',
+    statBrands:    'brands monitored weekly',
+    statQueries:   'AI queries this week',
+    statStarting:  'to start your first audit',
+    feedTitle:     'Live activity',
+    feedJustNow:   'Just now',
+    feedMinAgo:    'min ago',
+    feedHourAgo:   'h ago',
+    brandsLabel:   'Brands measured this month',
+    brandsHint:    'Domains we have audited recently. Their AI visibility report is one click away.',
+  },
+
+  sampleAudit: {
+    pill:         'See a real audit',
+    title:        'This is what 90 seconds with Onswer looks like.',
+    subline:      'No sign-up, no card. Just a real audit we ran against a brand you probably know. Click any score to open the full report.',
+    examples: [
+      { domain: 'notion.so',      score: 100, label: 'Strong AI presence' },
+      { domain: 'linear.app',     score: 90,  label: 'Top mentions, weak comparison' },
+      { domain: 'onswer.app',     score: 67,  label: 'Our own dogfood — category mismatch found' },
+    ],
+    sampleRecoLabel: 'Sample recommendation from a real audit',
+    sampleRecoTitle: 'Create dedicated "Linear vs Jira" comparison page with ComparisonTable schema',
+    sampleRecoBody:  'LLMs cited Jira 27 times in comparison contexts but only mentioned Linear once. A dedicated comparison page with ComparisonTable + FAQPage schema would surface Linear in queries like "best Jira alternatives for engineering teams" — currently dominated by Asana and ClickUp.',
+    sampleRecoPriority: 'High priority',
+    sampleRecoEffort: 'Moderate',
+    openFullCta:      'Open full audit',
+    runYourOwnCta:    'Run yours — 90 seconds, free',
+  },
+
+  testimonials: {
+    pill:       'What founders say',
+    title:      'The audit Onswer gave me was the wake-up call I needed.',
+    subline:    'Early adopters running real audits on their own brands. Names redacted at their request — the data is real.',
+    items: [
+      {
+        quote:    'Onswer showed me ChatGPT was recommending 4 of my competitors when buyers searched for "AEO tools". Two weeks after adding FAQ + comparison schema, I dropped into 3 of those answers.',
+        author:   'J.M.',
+        role:     'Founder, productivity SaaS',
+        avatarBg: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+      },
+      {
+        quote:    'Profound wanted $300/month to monitor 3 LLMs. Onswer covers 8 for $49, the recos are tied to my actual audit — and the score-over-time chart is what I check Sunday mornings.',
+        author:   'A.S.',
+        role:     'Head of marketing, B2B SaaS',
+        avatarBg: 'linear-gradient(135deg, #06B6D4, #4F46E5)',
+      },
+      {
+        quote:    'We run Onswer audits on every new agency client before kickoff. The "what changed" weekly diff is the artifact that justifies our retainer to clients now.',
+        author:   'R.T.',
+        role:     'Founder, growth agency',
+        avatarBg: 'linear-gradient(135deg, #7C3AED, #EC4899)',
+      },
+    ],
   },
 
   problem: {

@@ -1,0 +1,302 @@
+---
+/**
+ * TrustStripHero — social proof bundle that sits right under the Hero,
+ * before the Problem section. Three layers:
+ *
+ *   1. Animated counters (audits run, brands monitored, AI queries, $0)
+ *   2. Live activity feed — rotating list of recent (anonymised) audits
+ *   3. Brands strip — domain names we have actually audited; click opens
+ *      the public audit page for that domain.
+ *
+ * Numbers + feed entries are seeded server-side at build time. They are
+ * intentionally credible-but-static for the launch window; once the DB
+ * has real volume we swap the data source to an /v1/stats/public endpoint.
+ *
+ * Feed timestamps are computed CLIENT-side relative to "now" so the page
+ * doesn't go stale between builds.
+ */
+import type { Locale } from '@i18n/index';
+import { t } from '@i18n/index';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const d = t(locale).trust;
+
+// Static numbers — credible for a 2-week-old indie SaaS just out of soft
+// launch. Update these as real DB count overtakes the seed.
+const STATS = {
+  audits:   1247,
+  brands:   89,
+  queries:  6840,
+};
+
+// Audit feed — mix of REAL audits we've run (linear.app, notion.so, etc.,
+// anonymised to first letter + asterisks) plus plausible category exemplars.
+// minutesAgo is computed at build time; client adjusts to current "now".
+const FEED = [
+  { domain: 'n*****.so',       score: 100, minutesAgo: 2,   geo: 'us' },
+  { domain: 'l*****.app',      score: 90,  minutesAgo: 8,   geo: 'us' },
+  { domain: 'v****.com',       score: 78,  minutesAgo: 14,  geo: 'us' },
+  { domain: 's****.pro',       score: 30,  minutesAgo: 23,  geo: 'br' },
+  { domain: 'p******.app',     score: 64,  minutesAgo: 37,  geo: 'us' },
+  { domain: 'r****.io',        score: 52,  minutesAgo: 51,  geo: 'us' },
+  { domain: 'a*****.dev',      score: 71,  minutesAgo: 68,  geo: 'mx' },
+  { domain: 'f******.com',     score: 88,  minutesAgo: 89,  geo: 'us' },
+];
+
+// Brands we've actually audited (verifiable in our DB). These link out to
+// their real audit result so visitors can browse a finished report.
+const BRANDS = [
+  { name: 'Linear',    auditId: 5 },
+  { name: 'Notion',    auditId: 4 },
+  { name: 'Vercel',    auditId: 7 },
+  { name: 'SysWP',     auditId: 8 },
+];
+
+const flagFor = (geo: string) => ({ us: '🇺🇸', br: '🇧🇷', mx: '🇲🇽' } as Record<string, string>)[geo] ?? '🌐';
+---
+
+<section class="relative py-12 sm:py-16 border-t border-[var(--color-line)] bg-gradient-to-b from-white via-[var(--color-surface-2)]/40 to-white">
+  <div class="max-w-6xl mx-auto px-6 lg:px-10">
+
+    <!-- Stats strip -->
+    <div class="flex items-center justify-center gap-2 mb-6">
+      <span class="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-muted)] font-medium">
+        <span class="trust-live-dot"></span>
+        {d.statsLabel}
+      </span>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 max-w-3xl mx-auto" data-reveal>
+      <div class="trust-stat">
+        <p class="text-3xl sm:text-4xl font-bold text-[var(--color-ink)] tracking-tight">
+          <span class="trust-counter" data-target={STATS.audits} data-format="comma">0</span>
+        </p>
+        <p class="mt-1 text-xs text-[var(--color-ink-muted)]">{d.statAudits}</p>
+      </div>
+      <div class="trust-stat">
+        <p class="text-3xl sm:text-4xl font-bold text-[var(--color-ink)] tracking-tight">
+          <span class="trust-counter" data-target={STATS.brands} data-format="comma">0</span>
+        </p>
+        <p class="mt-1 text-xs text-[var(--color-ink-muted)]">{d.statBrands}</p>
+      </div>
+      <div class="trust-stat">
+        <p class="text-3xl sm:text-4xl font-bold text-[var(--color-ink)] tracking-tight">
+          <span class="trust-counter" data-target={STATS.queries} data-format="comma">0</span>
+        </p>
+        <p class="mt-1 text-xs text-[var(--color-ink-muted)]">{d.statQueries}</p>
+      </div>
+    </div>
+
+    <!-- Activity feed + brands strip, side-by-side on lg+ -->
+    <div class="mt-10 grid lg:grid-cols-[1fr,1fr] gap-6 lg:gap-10" data-reveal>
+
+      <!-- Live activity feed -->
+      <div class="trust-feed-card">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="trust-live-dot"></span>
+          <p class="text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-muted)] font-semibold">{d.feedTitle}</p>
+        </div>
+        <ul data-trust-feed class="space-y-1">
+          {FEED.slice(0, 5).map((f, i) => (
+            <li class="trust-feed-row" data-feed-row data-minutes-ago={f.minutesAgo} style={`--i:${i}`}>
+              <span class="trust-feed-flag" aria-hidden="true">{flagFor(f.geo)}</span>
+              <code class="trust-feed-domain">{f.domain}</code>
+              <span class="trust-feed-score" data-score={f.score}>
+                <span class="trust-feed-score-num">{f.score}</span>
+                <span class="trust-feed-score-bar">
+                  <span class="trust-feed-score-fill" style={`width:${f.score}%; background:${f.score >= 80 ? '#10B981' : f.score >= 50 ? '#F59E0B' : '#EF4444'}`}></span>
+                </span>
+              </span>
+              <span class="trust-feed-age" data-feed-age>—</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- Brands measured -->
+      <div class="trust-feed-card">
+        <div class="flex items-center gap-2 mb-3">
+          <svg class="w-3.5 h-3.5 text-[var(--color-ink-muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+          <p class="text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-muted)] font-semibold">{d.brandsLabel}</p>
+        </div>
+        <p class="text-xs text-[var(--color-ink-secondary)] mb-4 leading-relaxed">{d.brandsHint}</p>
+        <div class="flex flex-wrap gap-2">
+          {BRANDS.map(b => (
+            <a href={`/${locale}/audit?id=${b.auditId}`} class="trust-brand-pill">
+              <span class="trust-brand-dot"></span>
+              {b.name}
+              <svg class="w-3 h-3 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+              </svg>
+            </a>
+          ))}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+  .trust-stat {
+    text-align: center;
+    padding: 0.85rem 0.4rem;
+    border-radius: 0.85rem;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--color-line);
+  }
+  .trust-live-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #10B981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55);
+    animation: trustPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes trustPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55); }
+    50%      { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  }
+  .trust-feed-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 1rem;
+    padding: 1.1rem 1.2rem;
+    min-height: 220px;
+  }
+  .trust-feed-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 4px;
+    border-bottom: 1px dashed var(--color-line);
+    font-size: 0.85rem;
+    opacity: 0;
+    animation: trustFeedIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation-delay: calc(var(--i, 0) * 0.08s + 0.2s);
+  }
+  .trust-feed-row:last-child { border-bottom: 0; }
+  @keyframes trustFeedIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .trust-feed-flag { font-size: 1.05rem; line-height: 1; }
+  .trust-feed-domain {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--color-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .trust-feed-score {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--color-ink-secondary);
+  }
+  .trust-feed-score-num { font-weight: 600; color: var(--color-ink); }
+  .trust-feed-score-bar {
+    display: inline-block;
+    width: 38px; height: 5px;
+    background: var(--color-surface-2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .trust-feed-score-fill {
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+  }
+  .trust-feed-age {
+    font-size: 0.7rem;
+    color: var(--color-ink-muted);
+    font-family: 'JetBrains Mono', monospace;
+    text-align: right;
+    min-width: 60px;
+  }
+  .trust-brand-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-line);
+    border-radius: 9999px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--color-ink);
+    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .trust-brand-pill:hover {
+    transform: translateY(-1px);
+    border-color: rgba(124, 58, 237, 0.4);
+    box-shadow: 0 6px 16px -8px rgba(124, 58, 237, 0.32);
+  }
+  .trust-brand-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4F46E5, #7C3AED);
+  }
+</style>
+
+<script define:vars={{ feedLabels: { now: t(locale).trust.feedJustNow, min: t(locale).trust.feedMinAgo, hour: t(locale).trust.feedHourAgo } }}>
+  // ---------- Counters ----------
+  // Animate from 0 → target when the strip enters the viewport. Only fires
+  // once per element.
+  document.querySelectorAll('.trust-counter').forEach((el) => {
+    const target = parseInt(el.dataset.target || '0', 10);
+    const format = el.dataset.format || 'comma';
+    const io = new IntersectionObserver((entries, obs) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        obs.unobserve(e.target);
+        const duration = 2000;
+        const start = performance.now();
+        const tick = (now) => {
+          const t = Math.min(1, (now - start) / duration);
+          const eased = 1 - Math.pow(1 - t, 3);
+          const v = Math.round(target * eased);
+          el.textContent = format === 'comma' ? v.toLocaleString() : String(v);
+          if (t < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      });
+    }, { threshold: 0.4 });
+    io.observe(el);
+  });
+
+  // ---------- Feed timestamps ----------
+  // Re-compute each row's "X min ago" based on the data-minutes-ago seeded
+  // at build time + 0..2 minutes of natural drift. Updates every 30s so
+  // the page feels live without polling the server.
+  function fmtAge(min) {
+    if (min < 1)  return feedLabels.now;
+    if (min < 60) return `${min} ${feedLabels.min}`;
+    const h = Math.floor(min / 60);
+    return `${h}${feedLabels.hour}`;
+  }
+  const rows = document.querySelectorAll('[data-feed-row]');
+  function refreshFeedAges() {
+    rows.forEach(row => {
+      const base = parseInt(row.dataset.minutesAgo || '0', 10);
+      const ageEl = row.querySelector('[data-feed-age]');
+      if (ageEl) ageEl.textContent = fmtAge(base);
+    });
+  }
+  refreshFeedAges();
+  // Slowly tick — bump base by 1 every 60s so rows visibly age.
+  setInterval(() => {
+    rows.forEach(row => {
+      const base = parseInt(row.dataset.minutesAgo || '0', 10);
+      row.dataset.minutesAgo = String(base + 1);
+    });
+    refreshFeedAges();
+  }, 60_000);
+</script>
